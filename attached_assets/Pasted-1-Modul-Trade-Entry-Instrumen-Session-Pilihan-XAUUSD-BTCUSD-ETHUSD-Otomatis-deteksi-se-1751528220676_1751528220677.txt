@@ -1,0 +1,107 @@
+1. Modul Trade Entry
+	•	Instrumen & Session
+	•	Pilihan XAUUSD, BTCUSD, ETHUSD
+	•	Otomatis deteksi session (Asia / London / New York) berdasarkan timestamp
+	•	Balance & Equity
+	•	Start Balance (awal modal sebelum entry)
+	•	Equity saat entry (untuk menghitung margin & risk)
+	•	Bias Pasar
+	•	Dropdown Bull / Bear / Sideways
+	•	Catatan singkat alasan bias (opsional)
+	•	Order Details
+	•	Tipe order: Market / Limit / Stop
+	•	Direction: Long / Short
+	•	Entry Price, Stop-Loss, Take-Profit awal
+	•	Opsi Partial TP: % lot & price level
+	•	Technical Notes (catatan teknikal)
+	•	Trend & price action (HH/HL, LH/LL)
+	•	Indikator (EMA20/50/200, RSI, MACD, Stochastic)
+	•	Level S/R, Fibonacci, chart patterns
+	•	Multi-timeframe confirmation (H4 vs M15/M5)
+
+⸻
+
+2. Modul Fundamental & News
+	•	Fetch Otomatis
+	•	API integrasi (Finnhub, Santiment, NewsAPI, dll.)
+	•	Jadwal fetch berkala (cron tiap 5–15 menit)
+	•	Data yang Ditampilkan
+	•	Event name & time (e.g. “CPI US, 08:30 GMT+7”)
+	•	Sentiment score & label (Bullish / Bearish / Neutral)
+	•	Link sumber berita (opsional)
+	•	Custom Notes
+	•	Skor Sentimen Fundamental (1–5)
+	•	Catatan manual jika perlu
+
+⸻
+
+3. Modul Exit & Outcome
+	•	Exit Details
+	•	Exit Price & Exit Balance (equity setelah closing)
+	•	P&L: nominal & persentase otomatis dihitung
+	•	Exit Reason (pilihan)
+	1.	TP Hit (full/partial)
+	2.	SL Hit
+	3.	Stopout / Margin Call
+	4.	Manual Stopout (news trigger / invalidasi teknikal)
+	5.	Time-Based Exit (mis. end-of-session)
+	6.	Reversal Signal
+	7.	Breakeven / Trailing Stop
+
+⸻
+
+4. Modul Analytics & Reporting
+	•	Equity Curve
+	•	Grafik balance kumulatif per trade
+	•	Statistik Kinerja
+	•	Win Rate, Avg. Reward/Risk, Expectancy
+	•	Max Drawdown, Total P&L per instrumen
+	•	Distribusi R:R Ratio
+	•	Histogram profit factor
+	•	Filter & Segmentasi
+	•	Filter by instrument, session, bias, exit reason
+	•	Export & Share
+	•	Download CSV / PDF report
+	•	Integrasi Google Sheets export (opsional)
+
+⸻
+
+5. Modul Dashboard & UX
+	•	Ringkasan Home
+	•	KPI utama (win rate, P&L, drawdown)
+	•	Quick-view last 5 trades
+	•	History Table
+	•	Kolom sortable (date, instrumen, profit, exit reason)
+	•	Pencarian & pagination
+	•	Form Wizard
+	•	Step-by-step entry (General → Fundamental → Order → Exit)
+	•	Autosave draft trade
+	•	Notif & Alerts
+	•	Push notif saat TP/SL hit (via email / WebSocket)
+	•	Reminder close open trades sebelum sesi berakhir
+
+⸻
+
+6. Integrasi & Otomatisasi
+	•	Price Feed Real-Time
+	•	WebSocket Binance / API broker (XAU via broker Forex)
+	•	Update mid-price & margin
+	•	News & Sentiment
+	•	Cron job / cloud scheduler untuk pre-fetch data
+	•	Cache hasil API untuk history review
+	•	Authentication & Multi-User
+	•	JWT / OAuth2 (Google, GitHub)
+	•	Isolasi data per user (multi-tenant)
+
+⸻
+
+7. Pengaturan & Keamanan
+	•	User Settings
+	•	Timezone, default lot size, default bias
+	•	API keys management (Finnhub, Santiment)
+	•	Audit Trail
+	•	Log perubahan data (edit trade, delete)
+	•	Backup & Export Otomatis
+	•	Snapshot database harian ke cloud storage
+	•	SSL & Rate Limiting
+	•	Lindungi endpoint API, batasi request per menit
