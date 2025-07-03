@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import Dashboard from "@/pages/dashboard";
 import TradeEntry from "@/pages/trade-entry";
 import TradeHistory from "@/pages/trade-history";
@@ -34,17 +35,19 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
         <TooltipProvider>
-          <div className="flex h-screen overflow-hidden bg-background text-foreground dark">
-            <Sidebar />
-            <div className="flex-1 overflow-hidden">
-              <MobileHeader />
-              <main className="flex-1 overflow-x-hidden overflow-y-auto">
-                <div className="p-6">
-                  <Router />
-                </div>
-              </main>
+          <SidebarProvider>
+            <div className="flex h-screen overflow-hidden bg-background text-foreground dark">
+              <Sidebar />
+              <div className="flex-1 overflow-hidden flex flex-col">
+                <MobileHeader />
+                <main className="flex-1 overflow-x-hidden overflow-y-auto">
+                  <div className="p-6">
+                    <Router />
+                  </div>
+                </main>
+              </div>
             </div>
-          </div>
+          </SidebarProvider>
           <Toaster />
         </TooltipProvider>
       </ThemeProvider>
