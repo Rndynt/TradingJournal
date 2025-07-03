@@ -7,7 +7,8 @@ import {
   BarChart3, 
   Newspaper, 
   Settings, 
-  User 
+  User,
+  DollarSign
 } from "lucide-react";
 
 const navigation = [
@@ -15,6 +16,7 @@ const navigation = [
   { name: "New Trade", href: "/trade-entry", icon: PlusCircle },
   { name: "Trade History", href: "/history", icon: History },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Prices", href: "/prices", icon: DollarSign },
   { name: "News & Events", href: "/news", icon: Newspaper },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
@@ -29,13 +31,13 @@ export default function Sidebar() {
         <div className="flex items-center justify-center h-16 px-4 bg-muted">
           <h1 className="text-xl font-bold text-foreground">TradePro Journal</h1>
         </div>
-        
+
         {/* Navigation */}
         <nav className="mt-6 flex-1 px-4 space-y-2">
           {navigation.map((item) => {
             const Icon = item.icon;
             const isActive = location === item.href;
-            
+
             return (
               <Link key={item.name} href={item.href}>
                 <span
@@ -53,7 +55,7 @@ export default function Sidebar() {
             );
           })}
         </nav>
-        
+
         {/* User Profile */}
         <div className="p-4 border-t border-dark-300">
           <div className="flex items-center">

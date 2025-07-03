@@ -9,6 +9,7 @@ import Dashboard from "@/pages/dashboard";
 import TradeEntry from "@/pages/trade-entry";
 import TradeHistory from "@/pages/trade-history";
 import Analytics from "@/pages/analytics";
+import Prices from "@/pages/prices";
 import News from "@/pages/news";
 import Settings from "@/pages/settings";
 import Sidebar from "@/components/layout/sidebar";
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/trade-entry/:id" component={TradeEntry} />
       <Route path="/history" component={TradeHistory} />
       <Route path="/analytics" component={Analytics} />
+      <Route path="/prices" component={Prices} />
       <Route path="/news" component={News} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />

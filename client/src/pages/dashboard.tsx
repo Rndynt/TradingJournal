@@ -11,7 +11,11 @@ import {
   ArrowRight
 } from "lucide-react";
 import { useTrades, useTradeStats } from "@/hooks/use-trades";
-import { formatCurrency, formatPercentage } from "@/lib/utils/calculations";
+import { formatCurrency } from "@/lib/utils/calculations";
+import { cn } from "@/lib/utils";
+import { Plus, TrendingUp, TrendingDown, DollarSign, Target, ArrowRight } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import PriceTicker from "@/components/charts/price-ticker";
 import { getSessionLabel } from "@/lib/utils/session-detector";
 import EquityCurve from "@/components/charts/equity-curve";
 import PlDistribution from "@/components/charts/pl-distribution";
@@ -76,7 +80,20 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* Current Prices */}
+      <Card className="bg-dark-200 border-dark-300">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center space-x-2">
+            <TrendingUp className="h-5 w-5 text-profit" />
+            <span>Current Prices</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PriceTicker compact={true} />
+        </CardContent>
+      </Card>
+
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="bg-dark-200 border-dark-300">
           <CardContent className="p-6">
@@ -93,7 +110,7 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-dark-200 border-dark-300">
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -112,7 +129,7 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-dark-200 border-dark-300">
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -128,7 +145,7 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-dark-200 border-dark-300">
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -159,7 +176,7 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
-        
+
         {/* P&L Distribution */}
         <Card className="bg-dark-200 border-dark-300">
           <CardHeader>
