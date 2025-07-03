@@ -13,7 +13,6 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
-    "lightningcss": "^1.4.0",
     "serverless-http": "^3.0.0",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
