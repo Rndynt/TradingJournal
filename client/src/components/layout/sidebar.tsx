@@ -24,10 +24,10 @@ export default function Sidebar() {
 
   return (
     <div className="hidden md:flex md:flex-shrink-0">
-      <div className="flex flex-col w-64 bg-dark-200 border-r border-dark-300">
+      <div className="flex flex-col w-64 bg-card border-r border-border">
         {/* Logo */}
-        <div className="flex items-center justify-center h-16 px-4 bg-dark-300">
-          <h1 className="text-xl font-bold text-white">TradePro Journal</h1>
+        <div className="flex items-center justify-center h-16 px-4 bg-muted">
+          <h1 className="text-xl font-bold text-foreground">TradePro Journal</h1>
         </div>
         
         {/* Navigation */}
@@ -42,8 +42,8 @@ export default function Sidebar() {
                   className={cn(
                     "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors cursor-pointer",
                     isActive
-                      ? "text-white bg-dark-300"
-                      : "text-gray-300 hover:text-white hover:bg-dark-300"
+                      ? "text-primary-foreground bg-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                 >
                   <Icon className="mr-3 h-5 w-5" />

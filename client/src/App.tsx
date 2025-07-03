@@ -34,7 +34,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
         <TooltipProvider>
-          <div className="flex h-screen overflow-hidden bg-dark-100 text-gray-100">
+          <div className="flex h-screen overflow-hidden bg-background text-foreground dark">
             <Sidebar />
             <div className="flex-1 overflow-hidden">
               <MobileHeader />

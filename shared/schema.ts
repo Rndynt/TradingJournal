@@ -39,7 +39,8 @@ export const insertTradeSchema = createInsertSchema(trades).omit({
   exitDate: true,
   pnl: true,
   pnlPercentage: true,
-  rrRatio: true,
+}).extend({
+  rrRatio: z.string().optional(),
 });
 
 export const updateTradeSchema = createInsertSchema(trades).omit({

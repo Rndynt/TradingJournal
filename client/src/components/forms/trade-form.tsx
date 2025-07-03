@@ -388,13 +388,13 @@ export default function TradeForm({ trade, onSuccess }: TradeFormProps) {
           type="button"
           variant="outline"
           onClick={() => setLocation("/")}
-          className="border-dark-400 text-gray-300 hover:text-white hover:bg-dark-300"
+          className="border-border text-muted-foreground hover:text-foreground hover:bg-muted"
         >
           Cancel
         </Button>
         <Button
           type="submit"
-          className="bg-info text-white hover:bg-blue-600"
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
           disabled={createTrade.isPending || updateTrade.isPending}
         >
           {createTrade.isPending || updateTrade.isPending ? "Saving..." : trade ? "Update Trade" : "Save Trade"}

@@ -1,5 +1,5 @@
 import { useParams } from "wouter";
-import TradeForm from "@/components/forms/trade-form";
+import TradeForm from "@/components/forms/simple-trade-form";
 import { useTrade } from "@/hooks/use-trades";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
