@@ -191,7 +191,7 @@ export class MemStorage implements IStorage {
   async createTrade(insertTrade: InsertTrade): Promise<Trade> {
     const id = this.currentId++;
     const now = new Date();
-    
+
     // Calculate P&L and other metrics
     const pnl = insertTrade.exitPrice 
       ? (parseFloat(insertTrade.exitPrice) - parseFloat(insertTrade.entryPrice)) * 
@@ -200,7 +200,7 @@ export class MemStorage implements IStorage {
       : 0;
 
     const pnlPercentage = pnl / parseFloat(insertTrade.startBalance) * 100;
-    
+
     const risk = Math.abs(parseFloat(insertTrade.entryPrice) - parseFloat(insertTrade.stopLoss || "0"));
     const reward = Math.abs(parseFloat(insertTrade.takeProfit || "0") - parseFloat(insertTrade.entryPrice));
     const rrRatio = risk > 0 ? reward / risk : 0;
@@ -260,16 +260,16 @@ export class MemStorage implements IStorage {
     const trades = Array.from(this.trades.values());
     const closedTrades = trades.filter(trade => trade.status === "closed");
     const winningTrades = closedTrades.filter(trade => parseFloat(trade.pnl || "0") > 0);
-    
+
     const winRate = closedTrades.length > 0 ? (winningTrades.length / closedTrades.length) * 100 : 0;
     const totalPnl = closedTrades.reduce((sum, trade) => sum + parseFloat(trade.pnl || "0"), 0);
     const activeTrades = trades.filter(trade => trade.status === "open").length;
-    
+
     // Calculate max drawdown (simplified)
     let maxDrawdown = 0;
     let peak = 0;
     let current = 0;
-    
+
     for (const trade of closedTrades) {
       current += parseFloat(trade.pnl || "0");
       if (current > peak) peak = current;

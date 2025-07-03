@@ -10,6 +10,7 @@ import { RefreshCw, ExternalLink, TrendingUp, TrendingDown, Minus, Clock } from 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface NewsEvent {
   id: string;
@@ -33,89 +34,55 @@ interface CustomNote {
 }
 
 export default function News() {
-  const [events, setEvents] = useState<NewsEvent[]>([]);
   const [customNotes, setCustomNotes] = useState<CustomNote[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<NewsEvent | null>(null);
   const [noteScore, setNoteScore] = useState(3);
   const [noteText, setNoteText] = useState("");
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Simulasi data berita ekonomi
-  const mockEvents: NewsEvent[] = [
-    {
-      id: "1",
-      title: "US Non-Farm Payrolls",
-      time: "08:30 GMT+7",
-      impact: "high",
-      currency: "USD",
-      actual: "275K",
-      forecast: "200K",
-      previous: "150K",
-      sentiment: "bullish",
-      description: "Monthly change in the number of employed people during the previous month"
+  // Fetch news events from API
+  const { data: events = [], isLoading: loading, refetch } = useQuery<NewsEvent[]>({
+    queryKey: ["/api/news"],
+    queryFn: async () => {
+      const response = await fetch("/api/news");
+      if (!response.ok) {
+        throw new Error("Failed to fetch news events");
+      }
+      return response.json();
     },
-    {
-      id: "2", 
-      title: "FOMC Interest Rate Decision",
-      time: "02:00 GMT+7",
-      impact: "high",
-      currency: "USD",
-      forecast: "5.50%",
-      previous: "5.25%",
-      sentiment: "neutral",
-      description: "Federal Reserve's decision on interest rates"
+  });
+
+  // Fetch custom notes from API
+  const { data: notesData = [] } = useQuery<CustomNote[]>({
+    queryKey: ["/api/news/notes"],
+    queryFn: async () => {
+      const response = await fetch("/api/news/notes");
+      if (!response.ok) {
+        throw new Error("Failed to fetch notes");
+      }
+      return response.json();
     },
-    {
-      id: "3",
-      title: "ECB Press Conference",
-      time: "20:30 GMT+7",
-      impact: "high",
-      currency: "EUR",
-      sentiment: "bearish",
-      description: "European Central Bank President's press conference"
-    },
-    {
-      id: "4",
-      title: "UK GDP Growth Rate",
-      time: "14:00 GMT+7",
-      impact: "medium",
-      currency: "GBP",
-      actual: "0.3%",
-      forecast: "0.2%",
-      previous: "0.1%",
-      sentiment: "bullish",
-      description: "Quarterly gross domestic product growth rate"
-    },
-    {
-      id: "5",
-      title: "Gold Weekly Inventory",
-      time: "22:30 GMT+7",
-      impact: "medium",
-      currency: "XAU",
-      sentiment: "neutral",
-      description: "Weekly gold inventory data"
-    }
-  ];
+  });
 
   useEffect(() => {
-    // Simulasi fetch data
-    setTimeout(() => {
-      setEvents(mockEvents);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    setCustomNotes(notesData);
+  }, [notesData]);
 
-  const refreshEvents = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setEvents([...mockEvents]);
-      setLoading(false);
+  const refreshEvents = async () => {
+    try {
+      await refetch();
       toast({
         title: "Events Updated",
         description: "Latest economic events have been fetched.",
       });
-    }, 1000);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to refresh events. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getImpactColor = (impact: string) => {
@@ -142,25 +109,44 @@ export default function News() {
     }
   };
 
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     if (!selectedEvent || !noteText.trim()) return;
 
-    const newNote: CustomNote = {
-      id: Date.now().toString(),
-      eventId: selectedEvent.id,
-      score: noteScore,
-      notes: noteText,
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      const newNote = {
+        eventId: selectedEvent.id,
+        score: noteScore,
+        notes: noteText,
+      };
 
-    setCustomNotes(prev => [...prev, newNote]);
-    setNoteText("");
-    setSelectedEvent(null);
-    
-    toast({
-      title: "Note Added",
-      description: "Your custom note has been saved.",
-    });
+      const response = await fetch("/api/news/notes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newNote),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save note");
+      }
+
+      const savedNote = await response.json();
+      setCustomNotes(prev => [...prev, savedNote]);
+      setNoteText("");
+      setSelectedEvent(null);
+      
+      toast({
+        title: "Note Added",
+        description: "Your custom note has been saved.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save note. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getEventNotes = (eventId: string) => {

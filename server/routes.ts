@@ -124,6 +124,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // News endpoints
+  app.get("/api/news", async (req, res) => {
+    try {
+      const events = await storage.getNewsEvents();
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch news events" });
+    }
+  });
+
+  app.post("/api/news", async (req, res) => {
+    try {
+      const event = await storage.createNewsEvent(req.body);
+      res.status(201).json(event);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create news event" });
+    }
+  });
+
+  app.get("/api/news/notes", async (req, res) => {
+    try {
+      const notes = await storage.getNewsNotes();
+      res.json(notes);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch notes" });
+    }
+  });
+
+  app.post("/api/news/notes", async (req, res) => {
+    try {
+      const note = await storage.createNewsNote(req.body);
+      res.status(201).json(note);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create note" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
