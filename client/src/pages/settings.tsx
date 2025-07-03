@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,81 +20,50 @@ import {
   DollarSign,
   Trash2,
   Eye,
-  EyeOff
+  EyeOff,
+  Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useSettings, type UserSettings } from "@/hooks/use-settings";
 import { cn } from "@/lib/utils";
-
-interface UserSettings {
-  profile: {
-    name: string;
-    email: string;
-    timezone: string;
-    accountType: string;
-  };
-  trading: {
-    defaultLotSize: string;
-    defaultRiskPercentage: string;
-    defaultBias: string;
-    preferredInstruments: string[];
-  };
-  notifications: {
-    emailNotifications: boolean;
-    pushNotifications: boolean;
-    tradingReminders: boolean;
-    newsAlerts: boolean;
-  };
-  security: {
-    twoFactorEnabled: boolean;
-    sessionTimeout: string;
-  };
-  apiKeys: {
-    finnhub: string;
-    santiment: string;
-    newsApi: string;
-  };
-}
 
 export default function Settings() {
   const { toast } = useToast();
+  const { settings: serverSettings, isLoading, saveSettings, isSaving } = useSettings();
   const [showApiKeys, setShowApiKeys] = useState(false);
-  const [settings, setSettings] = useState<UserSettings>({
-    profile: {
-      name: "John Trader",
-      email: "john.trader@example.com",
-      timezone: "GMT+7",
-      accountType: "Premium"
-    },
-    trading: {
-      defaultLotSize: "0.10",
-      defaultRiskPercentage: "2.0",
-      defaultBias: "bull",
-      preferredInstruments: ["XAUUSD", "BTCUSD"]
-    },
-    notifications: {
-      emailNotifications: true,
-      pushNotifications: false,
-      tradingReminders: true,
-      newsAlerts: true
-    },
-    security: {
-      twoFactorEnabled: false,
-      sessionTimeout: "60"
-    },
-    apiKeys: {
-      finnhub: "",
-      santiment: "",
-      newsApi: ""
-    }
-  });
+  const [settings, setSettings] = useState<UserSettings | null>(null);
 
-  const handleSave = () => {
-    // Simulasi save settings
-    toast({
-      title: "Settings Saved",
-      description: "Your preferences have been updated successfully.",
-    });
+  useEffect(() => {
+    if (serverSettings) {
+      setSettings(serverSettings);
+    }
+  }, [serverSettings]);
+
+  const handleSave = async () => {
+    if (!settings) return;
+    
+    try {
+      await saveSettings(settings);
+      toast({
+        title: "Settings Saved",
+        description: "Your preferences have been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save settings. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
+
+  if (isLoading || !settings) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-white" />
+      </div>
+    );
+  }
 
   const handleExportData = () => {
     // Simulasi export data
@@ -455,9 +424,17 @@ export default function Settings() {
       <div className="flex justify-end">
         <Button
           onClick={handleSave}
+          disabled={isSaving}
           className="bg-profit text-white hover:bg-green-600"
         >
-          Save All Settings
+          {isSaving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            "Save All Settings"
+          )}
         </Button>
       </div>
     </div>

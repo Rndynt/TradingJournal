@@ -20,15 +20,47 @@ export interface IStorage {
     activeTrades: number;
     totalTrades: number;
   }>;
+  getSettings(): Promise<any>;
+  updateSettings(settings: any): Promise<any>;
 }
 
 export class MemStorage implements IStorage {
   private trades: Map<number, Trade>;
   private currentId: number;
+  private settings: any;
 
   constructor() {
     this.trades = new Map();
     this.currentId = 1;
+    this.settings = {
+      profile: {
+        name: "John Trader",
+        email: "john.trader@example.com",
+        timezone: "GMT+7",
+        accountType: "Premium"
+      },
+      trading: {
+        defaultLotSize: "0.10",
+        defaultRiskPercentage: "2.0",
+        defaultBias: "bull",
+        preferredInstruments: ["XAUUSD", "BTCUSD"]
+      },
+      notifications: {
+        emailNotifications: true,
+        pushNotifications: false,
+        tradingReminders: true,
+        newsAlerts: true
+      },
+      security: {
+        twoFactorEnabled: false,
+        sessionTimeout: "60"
+      },
+      apiKeys: {
+        finnhub: "",
+        santiment: "",
+        newsApi: ""
+      }
+    };
     this.seedData();
   }
 
@@ -252,6 +284,15 @@ export class MemStorage implements IStorage {
       activeTrades,
       totalTrades: trades.length,
     };
+  }
+
+  async getSettings(): Promise<any> {
+    return this.settings;
+  }
+
+  async updateSettings(newSettings: any): Promise<any> {
+    this.settings = { ...this.settings, ...newSettings };
+    return this.settings;
   }
 }
 
