@@ -113,7 +113,12 @@ TradePro Journal is a comprehensive trading journal application built with React
 
 ```
 Changelog:
-- July 03, 2025. Initial setup
+- July 03, 2025. Initial setup with comprehensive trading journal
+  - Built complete CRUD operations for trade management
+  - Implemented dark theme optimized for trading
+  - Added session detection for Asia/London/New York
+  - Created analytics dashboard with equity curve and P&L distribution
+  - Integrated filtering, export, and performance metrics
 ```
 
 ## User Preferences

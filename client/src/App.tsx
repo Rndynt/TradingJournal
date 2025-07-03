@@ -8,6 +8,8 @@ import Dashboard from "@/pages/dashboard";
 import TradeEntry from "@/pages/trade-entry";
 import TradeHistory from "@/pages/trade-history";
 import Analytics from "@/pages/analytics";
+import News from "@/pages/news";
+import Settings from "@/pages/settings";
 import Sidebar from "@/components/layout/sidebar";
 import MobileHeader from "@/components/layout/mobile-header";
 import NotFound from "@/pages/not-found";
@@ -20,6 +22,8 @@ function Router() {
       <Route path="/trade-entry/:id" component={TradeEntry} />
       <Route path="/history" component={TradeHistory} />
       <Route path="/analytics" component={Analytics} />
+      <Route path="/news" component={News} />
+      <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
   );

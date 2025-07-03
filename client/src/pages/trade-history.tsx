@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Filter } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Download, Filter, X } from "lucide-react";
 import { useFilteredTrades } from "@/hooks/use-trades";
 import { formatCurrency } from "@/lib/utils/calculations";
 import TradeTable from "@/components/tables/trade-table";
+import ExitTradeForm from "@/components/forms/exit-trade-form";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import type { TradeFilter } from "@/types/trade";
@@ -17,6 +19,7 @@ import type { Trade } from "@shared/schema";
 export default function TradeHistory() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [selectedTradeForExit, setSelectedTradeForExit] = useState<Trade | null>(null);
   const [filter, setFilter] = useState<TradeFilter>({
     instrument: "all",
     session: "all",
@@ -36,11 +39,14 @@ export default function TradeHistory() {
   };
 
   const handleView = (trade: Trade) => {
-    // TODO: Implement trade detail view
-    toast({
-      title: "Trade Details",
-      description: `Viewing ${trade.instrument} trade from ${new Date(trade.entryDate).toLocaleDateString()}`,
-    });
+    if (trade.status === "open") {
+      setSelectedTradeForExit(trade);
+    } else {
+      toast({
+        title: "Trade Details",
+        description: `Viewing ${trade.instrument} trade from ${new Date(trade.entryDate).toLocaleDateString()}`,
+      });
+    }
   };
 
   const handleExport = () => {
@@ -234,6 +240,32 @@ export default function TradeHistory() {
           </CardContent>
         </Card>
       )}
+
+      {/* Exit Trade Dialog */}
+      <Dialog open={!!selectedTradeForExit} onOpenChange={() => setSelectedTradeForExit(null)}>
+        <DialogContent className="max-w-4xl bg-dark-100 border-dark-300">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center justify-between">
+              Close Trade
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedTradeForExit(null)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          {selectedTradeForExit && (
+            <ExitTradeForm
+              trade={selectedTradeForExit}
+              onSuccess={() => setSelectedTradeForExit(null)}
+              onCancel={() => setSelectedTradeForExit(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
