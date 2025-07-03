@@ -8,12 +8,12 @@ import {
   TrendingDown, 
   Activity,
   Plus,
-  ArrowRight
+  ArrowRight,
+  Target
 } from "lucide-react";
 import { useTrades, useTradeStats } from "@/hooks/use-trades";
 import { formatCurrency } from "@/lib/utils/calculations";
 import { cn } from "@/lib/utils";
-import { Plus, TrendingUp, TrendingDown, DollarSign, Target, ArrowRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import PriceTicker from "@/components/charts/price-ticker";
 import { getSessionLabel } from "@/lib/utils/session-detector";
