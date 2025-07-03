@@ -51,6 +51,7 @@ export default defineConfig(async () => {
           format: "esm",
         },
       },
+      chunkSizeWarningLimit: 1000
     },
     server: {
       fs: {
