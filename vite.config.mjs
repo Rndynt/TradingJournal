@@ -5,17 +5,17 @@ import path from "path";
 import { fileURLToPath } from "url";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-// Di ESM, __dirname bisa didapat dari import.meta.url
+// Dapatkan __dirname di modul ESM
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(async () => {
-  // 1) Inisialisasi array plugin
+  // 1) Setup plugin dasar
   const plugins = [
     react(),
     runtimeErrorOverlay(),
   ];
 
-  // 2) Hanya load Cartographer di dev Replit
+  // 2) Tambahkan Cartographer hanya di dev Replit
   if (
     process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
@@ -24,6 +24,7 @@ export default defineConfig(async () => {
     plugins.push(cartographer());
   }
 
+  // 3) Kembalikan konfigurasi lengkap
   return {
     plugins,
     resolve: {
@@ -35,15 +36,19 @@ export default defineConfig(async () => {
     },
     root: path.resolve(__dirname, "client"),
     build: {
-      // output static ke dist/public
+      // Output static files ke dist/public
       outDir: path.resolve(__dirname, "dist/public"),
       emptyOutDir: true,
-      target: "esnext",        // biar top-level await & import.meta jalan
+
+      // Paksa menggunakan esbuild untuk JS & CSS minification
+      minify: "esbuild",
+      cssMinify: "esbuild",
+
+      // Target modern environment agar import.meta & top-level await jalan
+      target: "esnext",
       rollupOptions: {
-        // LightningCSS pakai native .node di runtime
-        external: ["lightningcss", /^lightningcss-.*/],
         output: {
-          format: "esm",       // pastikan modul ESM agar import.meta tersedia
+          format: "esm",
         },
       },
     },
