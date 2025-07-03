@@ -19,8 +19,6 @@ import PriceTicker from "@/components/charts/price-ticker";
 import { getSessionLabel } from "@/lib/utils/session-detector";
 import EquityCurve from "@/components/charts/equity-curve";
 import PlDistribution from "@/components/charts/pl-distribution";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
   const { data: trades = [], isLoading: tradesLoading } = useTrades();
