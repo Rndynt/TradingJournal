@@ -1,4 +1,4 @@
-// server/PgStorage.ts
+// server/storage.ts
 
 import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/neon-serverless";
