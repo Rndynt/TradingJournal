@@ -7,6 +7,18 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// ––– Tambahkan middleware debug –––
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  console.log("🔍 Incoming Request:", {
+    method: req.method,
+    url: req.originalUrl,
+    body: req.body,
+    dbUrl: process.env.NETLIFY_DATABASE_URL_UNPOOLED ?? process.env.NETLIFY_DATABASE_URL,
+  });
+  next();
+});
+// ––– End middleware debug ––-
+
 // Daftarkan hanya route /api
 registerRoutes(app);
 
