@@ -1,6 +1,6 @@
 // server/storage.ts
 
-import { Pool } from "pg";
+import { createClient } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import {
   trades,
@@ -9,21 +9,15 @@ import {
   type UpdateTrade,
 } from "@shared/schema";
 
-// 1. Inisiasi koneksi ke Neon via Pool + Drizzle
-const connectionString =
-  process.env.NETLIFY_DATABASE_URL_UNPOOLED ||
-  process.env.NETLIFY_DATABASE_URL;
-if (!connectionString) {
-  throw new Error(
-    "Env var NETLIFY_DATABASE_URL_UNPOOLED atau NETLIFY_DATABASE_URL wajib diset"
-  );
-}
-const pool = new Pool({
-  connectionString,
-  ssl: { rejectUnauthorized: false },
+// 1. Inisiasi client Neon Serverless (HTTP-based, pure JS)
+const client = createClient({
+  connectionString: process.env.NETLIFY_DATABASE_URL as string,
 });
-export const db = drizzle(pool);
 
+// 2. Hook Drizzle ORM di atas client tersebut
+export const db = drizzle(client);
+
+// 3. Storage class yang menggunakan Drizzle–Neon
 export class PgStorage {
   /** Ambil satu trade berdasarkan ID */
   async getTrade(id: number): Promise<Trade | undefined> {
@@ -34,7 +28,7 @@ export class PgStorage {
       .get();
   }
 
-  /** Ambil semua trade, urut newest first */
+  /** Ambil semua trade, newest first */
   async getAllTrades(): Promise<Trade[]> {
     return db
       .select()
@@ -72,15 +66,11 @@ export class PgStorage {
     return q.orderBy(trades.entryDate, "desc").all();
   }
 
-  /** Buat trade baru, meng‐override entryDate dengan sekarang */
+  /** Buat trade baru, override entryDate dengan sekarang */
   async createTrade(data: InsertTrade): Promise<Trade> {
     const [inserted] = await db
       .insert(trades)
-      .values({
-        ...data,
-        // entryDate default di DB .defaultNow(), tapi kita override agar konsisten
-        entryDate: new Date(),
-      })
+      .values({ ...data, entryDate: new Date() })
       .returning()
       .all();
     return inserted;
@@ -93,14 +83,7 @@ export class PgStorage {
   ): Promise<Trade | undefined> {
     const [updated] = await db
       .update(trades)
-      .set({
-        ...updateData,
-        // kalau exitDate diset (partial), biar konsisten:
-        exitDate:
-          updateData.exitDate !== undefined
-            ? updateData.exitDate
-            : undefined,
-      })
+      .set(updateData)
       .where(trades.id.eq(id))
       .returning()
       .all();
@@ -141,14 +124,11 @@ export class PgStorage {
     for (const t of closed) {
       current += parseFloat(t.pnl ?? "0");
       peak = Math.max(peak, current);
-      const dd = peak - current;
-      maxDD = Math.max(maxDD, dd);
+      maxDD = Math.max(maxDD, peak - current);
     }
-    const maxDrawdown =
-      peak > 0 ? (maxDD / peak) * 100 : 0;
+    const maxDrawdown = peak > 0 ? (maxDD / peak) * 100 : 0;
 
-    const activeTrades = all.filter((t) => t.status === "open")
-      .length;
+    const activeTrades = all.filter((t) => t.status === "open").length;
     const totalTrades = all.length;
 
     return {
@@ -161,5 +141,5 @@ export class PgStorage {
   }
 }
 
-// Export satu instance
+// 4. Export satu instance
 export const storage = new PgStorage();
