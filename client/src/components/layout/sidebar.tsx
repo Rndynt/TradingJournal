@@ -29,7 +29,7 @@ export default function Sidebar() {
       <div className="flex flex-col w-64 bg-card border-r border-border">
         {/* Logo */}
         <div className="flex items-center justify-center h-16 px-4 bg-muted">
-          <h1 className="text-xl font-bold text-foreground">TradePro Journal</h1>
+          <h1 className="text-xl font-bold text-foreground">TradeLogix Journal</h1>
         </div>
 
         {/* Navigation */}
