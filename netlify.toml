@@ -2,7 +2,10 @@
   command    = "npm ci && npm run migrate && npm run build:frontend && npm run build:functions"
   publish    = "dist/public"
   functions  = "netlify/functions"
-
+  
+[functions]
+  external_node_modules = ["pg-native"]
+  
 [[redirects]]
   from    = "/api/*"
   to      = "/.netlify/functions/api/:splat"
