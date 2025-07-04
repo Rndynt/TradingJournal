@@ -60,6 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new trade
+  /**
   app.post("/api/trades", async (req, res) => {
     try {
       const tradeData = insertTradeSchema.parse(req.body);
@@ -71,7 +72,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ message: "Failed to create trade" });
     }
-  });
+  }); **/
+
+  app.post("/api/trades", async (req, res, next) => {
+  // 1. Log payload mentah
+  console.log("✉️ POST /api/trades incoming body:", req.body);
+
+  let tradeData;
+  try {
+    tradeData = insertTradeSchema.parse(req.body);
+    console.log("🛠️ Parsed tradeData:", tradeData);
+  } catch (zErr) {
+    console.error("⚠️ Zod validation error:", zErr);
+    return res.status(400).json({ message: "Invalid trade data", errors: (zErr as any).errors });
+  }
+
+  try {
+    // 2. Jalankan insert dan log hasilnya
+    const result = await storage.createTrade(tradeData);
+    console.log("✅ storage.createTrade result:", result);
+    return res.status(201).json(result);
+  } catch (e) {
+    console.error("❌ Error in storage.createTrade:", e);
+    return next(e);
+  }
+});
 
   // Update trade
   app.put("/api/trades/:id", async (req, res) => {
