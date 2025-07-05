@@ -78,6 +78,8 @@ export class PgStorage {
     // 2. Siapkan query builder
     let q = await db.select().from(trades);
 
+    return q;
+
     if (filter.instrument && filter.instrument !== "all") {
       //q = q.where(trades.instrument.eq(filter.instrument));
       q = q.where(eq(trades.instrument, filter.instrument));
