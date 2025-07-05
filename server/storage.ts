@@ -61,7 +61,7 @@ export class PgStorage {
 
   async createTrade(data: InsertTrade): Promise<Trade> {
     // tanpa .all(), .run(), atau .execute()
-      const now = new Date();
+     // const now = new Date();
 
     // 1. Sanitasi: ubah setiap empty string jadi undefined
     const sanitized = Object.fromEntries(
@@ -73,12 +73,12 @@ export class PgStorage {
     // 2. Payload final: tambahkan entryDate
     const payload = {
       ...sanitized,
-      entryDate: now,
+      entryDate: new Date(),
     };
     
     const [inserted] = await db
       .insert(trades)
-      .values({ ...data, entryDate: new Date() })
+      .values(payload)
       .returning();
     return inserted;
   }
