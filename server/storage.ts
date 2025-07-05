@@ -112,17 +112,7 @@ export class PgStorage {
       }
     }
 
-    // 3. Log SQL yang akan dieksekusi
-    const { sql, params } = q.toSQL();
-    console.log("[getTradesByFilter] SQL:", sql);
-    console.log("[getTradesByFilter] params:", params);
-
-    // 4. Eksekusi dan log hasilnya
-    const rows = await q;
-    console.log(`[getTradesByFilter] returned ${rows.length} rows`);
-    rows.forEach((r, i) => console.log(`  [row ${i}]`, r));
-
-    return rows;
+    return q.orderBy(desc(trades.entryDate));
   }
 
 
