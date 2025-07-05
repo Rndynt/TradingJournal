@@ -45,7 +45,7 @@ export class PgStorage {
     status?: string;
     startDate?: string; // expected in DD/MM/YYYY
     endDate?: string;   // expected in DD/MM/YYYY
-  }
+  };
 
   type Trade = Awaited<ReturnType<typeof getTradesByFilter>>[number];
 
