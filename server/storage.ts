@@ -47,6 +47,39 @@ if (!url) {
 const sql = neon(url);
 const db = drizzle({ client: sql });
 
+
+ function sanitizeTradeData(data: Record<string, any>): Partial<UpdateTrade> {
+    const sanitized = Object.fromEntries(
+      Object.entries(data).map(([key, val]) => {
+        // Kosong / string null / undefined dianggap tidak diisi
+        if (val === "" || val === "null" || val === "undefined") {
+          return [key, undefined];
+        }
+  
+        // Konversi angka
+        if (["exitPrice", "pnl", "pnlPercentage"].includes(key)) {
+          const parsed = parseFloat(val);
+          return [key, isNaN(parsed) ? undefined : parsed];
+        }
+  
+        // Konversi tanggal
+        if (["exitDate", "entryDate"].includes(key)) {
+          const parsed = new Date(val);
+          return [key, isNaN(parsed.getTime()) ? undefined : parsed];
+        }
+  
+        // Biarkan string apa adanya
+        return [key, val];
+      })
+    ) as Partial<UpdateTrade>;
+  
+    // Tambahkan entryDate jika tidak ada (untuk insert atau logikamu)
+    return {
+      ...sanitized,
+      entryDate: sanitized.entryDate ?? new Date(),
+    };
+  }
+
 export class PgStorage {
   async getTrade(id: number): Promise<Trade | undefined> {
     return db.select().from(trades).where(trades.id.eq(id)).get();
@@ -346,38 +379,6 @@ export class PgStorage {
       .returning();
     return updated;
   }
-
-  function sanitizeTradeData(data: Record<string, any>): Partial<UpdateTrade> {
-  const sanitized = Object.fromEntries(
-    Object.entries(data).map(([key, val]) => {
-      // Kosong / string null / undefined dianggap tidak diisi
-      if (val === "" || val === "null" || val === "undefined") {
-        return [key, undefined];
-      }
-
-      // Konversi angka
-      if (["exitPrice", "pnl", "pnlPercentage"].includes(key)) {
-        const parsed = parseFloat(val);
-        return [key, isNaN(parsed) ? undefined : parsed];
-      }
-
-      // Konversi tanggal
-      if (["exitDate", "entryDate"].includes(key)) {
-        const parsed = new Date(val);
-        return [key, isNaN(parsed.getTime()) ? undefined : parsed];
-      }
-
-      // Biarkan string apa adanya
-      return [key, val];
-    })
-  ) as Partial<UpdateTrade>;
-
-  // Tambahkan entryDate jika tidak ada (untuk insert atau logikamu)
-  return {
-    ...sanitized,
-    entryDate: sanitized.entryDate ?? new Date(),
-  };
-}
   
   async updateTrade(id: number, data: Record<string, any>): Promise<Trade | undefined> {
     const payload = sanitizeTradeData(data);
