@@ -53,7 +53,64 @@ export class PgStorage {
   /**
    * Ambil trades berdasarkan filter: instrument, session, status, dan rentang tanggal
    */
+
   async getTradesByFilter(filter: Filter): Promise<Trade[]> {
+    console.log("[getTradesByFilter] filter:", filter);
+    let q = db.select().from(trades);
+
+    // instrument, session, status filters
+    if (filter.instrument?.toLowerCase() !== 'all' && filter.instrument) {
+      q = q.where(eq(trades.instrument, filter.instrument));
+    }
+    if (filter.session?.toLowerCase() !== 'all' && filter.session) {
+      q = q.where(eq(trades.session, filter.session));
+    }
+    if (filter.status?.toLowerCase() !== 'all' && filter.status) {
+      q = q.where(eq(trades.status, filter.status));
+    }
+
+    // Parse date string, return Date or null
+    const parseDate = (d: string): Date | null => {
+      let dt: number;
+      if (d.includes('/')) {
+        // DD/MM/YYYY
+        const [day, month, year] = d.split('/').map(Number);
+        dt = Date.UTC(year, month - 1, day);
+      } else {
+        // assume ISO YYYY-MM-DD
+        dt = Date.parse(d);
+      }
+      return isNaN(dt) ? null : new Date(dt);
+    };
+
+    // startDate filter (>= 00:00:00 UTC)
+    if (filter.startDate) {
+      const start = parseDate(filter.startDate);
+      if (start) {
+        // set to start of day UTC
+        start.setUTCHours(0, 0, 0, 0);
+        console.log('[getTradesByFilter] Applying startDate >=', start.toISOString());
+        q = q.where(gte(trades.entryDate, start));
+      }
+    }
+
+    // endDate filter (<= 23:59:59 UTC)
+    if (filter.endDate) {
+      const end = parseDate(filter.endDate);
+      if (end) {
+        // set to end of day UTC
+        end.setUTCHours(23, 59, 59, 999);
+        console.log('[getTradesByFilter] Applying endDate <=', end.toISOString());
+        q = q.where(lte(trades.entryDate, end));
+      }
+    }
+
+    console.log("[getTradesByFilter] SQL:", q.toSQL());
+    const result = await q;
+    console.log("[getTradesByFilter] count:", result.length);
+    return result;
+  }
+  async getTradesByFilterOld3(filter: Filter): Promise<Trade[]> {
     let q = db.select().from(trades);
 
     // instrument, session, status filters
