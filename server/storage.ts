@@ -29,9 +29,26 @@ export class PgStorage {
     return db.select().from(trades).where(trades.id.eq(id)).get();
   }
 
-  async getAllTrades(): Promise<Trade[]> {
+  async getAllTradesOld(): Promise<Trade[]> {
     return db.select().from(trades).orderBy(trades.entryDate, "desc").all();
   }
+
+  async getAllTrades(): Promise<Trade[]> {
+  console.log("[getAllTrades] fetching all trades from DB");
+  
+  // Bangun query
+  const q = db.select().from(trades).orderBy(trades.entryDate, "desc");
+  const { sql, params } = q.toSQL();
+  console.log("[getAllTrades] SQL:", sql);
+  console.log("[getAllTrades] params:", params);
+
+  // Eksekusi dan log hasilnya
+  const rows = await q.all();
+  console.log(`[getAllTrades] returned ${rows.length} rows`);
+  rows.forEach((r, i) => console.log(`  [trade ${i}]`, r));
+
+  return rows;
+}
 
   async getTradesByFilterOld(filter: {
     instrument?: string;
