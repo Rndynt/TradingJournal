@@ -5,7 +5,7 @@ import { neon } from "@neondatabase/serverless";
 import { drizzle } from 'drizzle-orm/neon-http';
 //import { asc, desc } from 'drizzle-orm';
 import { eq, gte, lte } from "drizzle-orm";
-import dayjs from "dayjs";
+//import dayjs from "dayjs";
 
 
 // Helper types & interfaces
@@ -56,6 +56,7 @@ export class PgStorage {
   /**
    * Ambil trades berdasarkan filter: instrument, session, status, dan rentang tanggal
    */
+  /**
   async getTradesByFilter(filter: Filter): Promise<Trade[]> {
     console.log("[getTradesByFilter] filter:", filter);
     let q = db.select().from(trades);
@@ -98,7 +99,7 @@ export class PgStorage {
     const rows = await q.all();
     console.log("[getTradesByFilter] count:", rows.length);
     return rows;
-  }
+  }**/
 
   async getTradesByFilterOld(filter: {
     instrument?: string;
@@ -126,7 +127,7 @@ export class PgStorage {
     return q.orderBy(trades.entryDate, "desc").all();
   }
 
-  async getTradesByFilterOld2(filter: {
+  async getTradesByFilter(filter: {
     instrument?: string;
     session?: string;
     status?: string;
@@ -138,8 +139,6 @@ export class PgStorage {
 
     // 2. Siapkan query builder
     let q = await db.select().from(trades);
-
-    return q;
 
     if (filter.instrument && filter.instrument !== "all") {
       //q = q.where(trades.instrument.eq(filter.instrument));
