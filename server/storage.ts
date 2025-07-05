@@ -7,6 +7,18 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import { eq, gte, lte } from "drizzle-orm";
 import dayjs from "dayjs";
 
+
+// Helper types & interfaces
+type Filter = {
+  instrument?: string;
+  session?: string;
+  status?: string;
+  startDate?: string; // DD/MM/YYYY
+  endDate?: string;   // DD/MM/YYYY
+};
+
+
+
 import {
   trades,
   type Trade,
@@ -41,71 +53,52 @@ export class PgStorage {
       return data;
   }
 
-  interface Filter {
-    instrument?: string;
-    session?: string;
-    status?: string;
-    startDate?: string; // expected in DD/MM/YYYY
-    endDate?: string;   // expected in DD/MM/YYYY
-  };
+  /**
+   * Ambil trades berdasarkan filter: instrument, session, status, dan rentang tanggal
+   */
+  async getTradesByFilter(filter: Filter): Promise<Trade[]> {
+    console.log("[getTradesByFilter] filter:", filter);
+    let q = db.select().from(trades);
 
-  type Trade = Awaited<ReturnType<typeof getTradesByFilter>>[number];
-
-export async function getTradesByFilter(filter: Filter): Promise<Trade[]> {
-  console.log("[getTradesByFilter] filter:", filter);
-
-  // 1. Build base query (do not await here)
-  let q = db.select().from(trades);
-
-  // 2. Apply instrument filter
-  if (filter.instrument && filter.instrument.toLowerCase() !== "all") {
-    q = q.where(eq(trades.instrument, filter.instrument));
-  }
-
-  // 3. Apply session filter
-  if (filter.session && filter.session.toLowerCase() !== "all") {
-    q = q.where(eq(trades.session, filter.session));
-  }
-
-  // 4. Apply status filter
-  if (filter.status && filter.status.toLowerCase() !== "all") {
-    q = q.where(eq(trades.status, filter.status));
-  }
-
-  // 5. Date parsing helper
-  const parseDMY = (d: string) => {
-    const [day, month, year] = d.split("/");
-    return dayjs(`${year}-${month}-${day}`, "YYYY-MM-DD").toDate();
-  };
-
-  // 6. Apply startDate (>= entryDate)
-  if (filter.startDate) {
-    const parsed = parseDMY(filter.startDate);
-    if (!isNaN(parsed.getTime())) {
-      q = q.where(gte(trades.entryDate, parsed));
-    } else {
-      console.warn("Invalid startDate:", filter.startDate);
+    if (filter.instrument && filter.instrument.toLowerCase() !== 'all') {
+      q = q.where(eq(trades.instrument, filter.instrument));
     }
-  }
-
-  // 7. Apply endDate (<= end of entryDate)
-  if (filter.endDate) {
-    const parsed = parseDMY(filter.endDate);
-    if (!isNaN(parsed.getTime())) {
-      const endOfDay = dayjs(parsed).endOf("day").toDate();
-      q = q.where(lte(trades.entryDate, endOfDay));
-    } else {
-      console.warn("Invalid endDate:", filter.endDate);
+    if (filter.session && filter.session.toLowerCase() !== 'all') {
+      q = q.where(eq(trades.session, filter.session));
     }
+    if (filter.status && filter.status.toLowerCase() !== 'all') {
+      q = q.where(eq(trades.status, filter.status));
+    }
+
+    const parseDMY = (d: string) => {
+      const [day, month, year] = d.split('/');
+      return dayjs(`${year}-${month}-${day}`, 'YYYY-MM-DD').toDate();
+    };
+
+    if (filter.startDate) {
+      const parsed = parseDMY(filter.startDate);
+      if (!isNaN(parsed.getTime())) {
+        q = q.where(gte(trades.entryDate, parsed));
+      } else {
+        console.warn("Invalid startDate:", filter.startDate);
+      }
+    }
+
+    if (filter.endDate) {
+      const parsed = parseDMY(filter.endDate);
+      if (!isNaN(parsed.getTime())) {
+        const endOfDay = dayjs(parsed).endOf('day').toDate();
+        q = q.where(lte(trades.entryDate, endOfDay));
+      } else {
+        console.warn("Invalid endDate:", filter.endDate);
+      }
+    }
+
+    console.log("[getTradesByFilter] executing...");
+    const rows = await q.all();
+    console.log("[getTradesByFilter] count:", rows.length);
+    return rows;
   }
-
-  // 8. Execute query
-  console.log("[getTradesByFilter] executing query...");
-  const rows = await q;
-  console.log("[getTradesByFilter] result count:", rows.length);
-
-  return rows;
-}
 
   async getTradesByFilterOld(filter: {
     instrument?: string;
