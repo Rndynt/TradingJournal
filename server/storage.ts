@@ -60,7 +60,22 @@ export class PgStorage {
   }
 
   async createTrade(data: InsertTrade): Promise<Trade> {
-    // ✅ tanpa .all(), .run(), atau .execute()
+    // tanpa .all(), .run(), atau .execute()
+      const now = new Date();
+
+    // 1. Sanitasi: ubah setiap empty string jadi undefined
+    const sanitized = Object.fromEntries(
+      Object.entries(data).map(([key, val]) =>
+        val === "" ? [key, undefined] : [key, val]
+      )
+    ) as Partial<InsertTrade>;
+
+    // 2. Payload final: tambahkan entryDate
+    const payload = {
+      ...sanitized,
+      entryDate: now,
+    };
+    
     const [inserted] = await db
       .insert(trades)
       .values({ ...data, entryDate: new Date() })
