@@ -1,7 +1,7 @@
 // server/storage.ts
 
 import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
+import { drizzle } from "drizzle-orm/neon-serverless";
 import {
   trades,
   type Trade,
@@ -9,11 +9,13 @@ import {
   type UpdateTrade,
 } from "@shared/schema";
 
-// 1. Bangun koneksi WebSocket‐based ke Neon (pure JS)
-const sql = neon(process.env.NETLIFY_DATABASE_URL!);
+// 1. Inisiasi Neon Serverless client
+const client = neon({
+  connectionString: process.env.NETLIFY_DATABASE_URL!,
+});
 
-// 2. Inisiasi Drizzle-HTTP di atas client itu
-export const db = drizzle({ client: sql });
+// 2. Inisiasi Drizzle di atas client itu
+export const db = drizzle(client);
 
 export class PgStorage {
   async getTrade(id: number): Promise<Trade | undefined> {
@@ -21,11 +23,7 @@ export class PgStorage {
   }
 
   async getAllTrades(): Promise<Trade[]> {
-    return db
-      .select()
-      .from(trades)
-      .orderBy(trades.entryDate, "desc")
-      .all();
+    return db.select().from(trades).orderBy(trades.entryDate, "desc").all();
   }
 
   async getTradesByFilter(filter: {
@@ -55,11 +53,11 @@ export class PgStorage {
   }
 
   async createTrade(data: InsertTrade): Promise<Trade> {
+    // ✅ tanpa .all(), .run(), atau .execute()
     const [inserted] = await db
       .insert(trades)
       .values({ ...data, entryDate: new Date() })
-      .returning()
-      .all();
+      .returning();
     return inserted;
   }
 
@@ -71,8 +69,7 @@ export class PgStorage {
       .update(trades)
       .set(updateData)
       .where(trades.id.eq(id))
-      .returning()
-      .all();
+      .returning();
     return updated;
   }
 
@@ -92,11 +89,10 @@ export class PgStorage {
     const closed = all.filter((t) => t.status === "closed");
     const wins = closed.filter((t) => parseFloat(t.pnl ?? "0") > 0);
     const winRate = closed.length ? (wins.length / closed.length) * 100 : 0;
-    const totalPnl = closed.reduce(
-      (sum, t) => sum + parseFloat(t.pnl ?? "0"),
-      0
-    );
-    let peak = 0, current = 0, maxDD = 0;
+    const totalPnl = closed.reduce((sum, t) => sum + parseFloat(t.pnl ?? "0"), 0);
+    let peak = 0,
+      current = 0,
+      maxDD = 0;
     for (const t of closed) {
       current += parseFloat(t.pnl ?? "0");
       peak = Math.max(peak, current);
