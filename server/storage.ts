@@ -91,8 +91,8 @@ export class PgStorage {
       q = q.where(eq(trades.status, filter.status));
     }
 
-    const { sql } = q.toSQL();
-    console.log("[getAllTrades2] SQL:", sql);
+    const sql1 = q.toSQL();
+    console.log("[getAllTrades2] SQL:", sql1);
 
     console.log("--------------filter startdate---------------");
 
