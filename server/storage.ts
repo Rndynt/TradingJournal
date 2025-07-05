@@ -9,13 +9,8 @@ import {
   type UpdateTrade,
 } from "@shared/schema";
 
-// 1. Inisiasi Neon Serverless client
-const client = neon({
-  connectionString: process.env.NETLIFY_DATABASE_URL!,
-});
-
-// 2. Inisiasi Drizzle di atas client itu
-export const db = drizzle(client);
+const sql = neon(process.env.DATABASE_URL!);
+const db = drizzle({ client: sql });
 
 export class PgStorage {
   async getTrade(id: number): Promise<Trade | undefined> {
