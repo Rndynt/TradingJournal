@@ -59,57 +59,59 @@ export class PgStorage {
     let q = db.select().from(trades);
 
     // instrument, session, status filters
-    if (filter.instrument?.toLowerCase() !== 'all' && filter.instrument) {
+    if (filter.instrument && filter.instrument.toLowerCase() !== 'all') {
       q = q.where(eq(trades.instrument, filter.instrument));
     }
-    if (filter.session?.toLowerCase() !== 'all' && filter.session) {
+    if (filter.session && filter.session.toLowerCase() !== 'all') {
       q = q.where(eq(trades.session, filter.session));
     }
-    if (filter.status?.toLowerCase() !== 'all' && filter.status) {
+    if (filter.status && filter.status.toLowerCase() !== 'all') {
       q = q.where(eq(trades.status, filter.status));
     }
 
     // Parse date string, return Date or null
     const parseDate = (d: string): Date | null => {
-      let dt: number;
+      let utcMs: number;
       if (d.includes('/')) {
         // DD/MM/YYYY
         const [day, month, year] = d.split('/').map(Number);
-        dt = Date.UTC(year, month - 1, day);
+        utcMs = Date.UTC(year, month - 1, day);
       } else {
         // assume ISO YYYY-MM-DD
-        dt = Date.parse(d);
+        utcMs = Date.parse(d);
       }
-      return isNaN(dt) ? null : new Date(dt);
+      return isNaN(utcMs) ? null : new Date(utcMs);
     };
 
-    // startDate filter (>= 00:00:00 UTC)
+    // Apply startDate filter
     if (filter.startDate) {
       const start = parseDate(filter.startDate);
       if (start) {
-        // set to start of day UTC
+        // start at 00:00:00 UTC
         start.setUTCHours(0, 0, 0, 0);
-        console.log('[getTradesByFilter] Applying startDate >=', start.toISOString());
+        console.log('[getTradesByFilter] startDate >=', start.toISOString());
         q = q.where(gte(trades.entryDate, start));
       }
     }
 
-    // endDate filter (<= 23:59:59 UTC)
+    // Apply endDate filter
     if (filter.endDate) {
       const end = parseDate(filter.endDate);
       if (end) {
-        // set to end of day UTC
+        // end at 23:59:59 UTC
         end.setUTCHours(23, 59, 59, 999);
-        console.log('[getTradesByFilter] Applying endDate <=', end.toISOString());
+        console.log('[getTradesByFilter] endDate <=', end.toISOString());
         q = q.where(lte(trades.entryDate, end));
       }
     }
 
-    console.log("[getTradesByFilter] SQL:", q.toSQL());
-    const result = await q;
-    console.log("[getTradesByFilter] count:", result.length);
-    return result;
+    // Log final SQL
+    console.log('[getTradesByFilter] SQL:', q.toSQL());
+    const rows = await q;
+    console.log('[getTradesByFilter] count:', rows.length);
+    return rows;
   }
+
   async getTradesByFilterOld3(filter: Filter): Promise<Trade[]> {
     let q = db.select().from(trades);
 
