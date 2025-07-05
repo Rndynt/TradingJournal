@@ -5,8 +5,12 @@ import { neon } from "@neondatabase/serverless";
 import { drizzle } from 'drizzle-orm/neon-http';
 //import { asc, desc } from 'drizzle-orm';
 import { eq, gte, lte } from "drizzle-orm";
-//import dayjs from "dayjs";
-
+import {
+  trades,
+  type Trade,
+  type InsertTrade,
+  type UpdateTrade,
+} from "@shared/schema";
 
 // Helper types & interfaces
 type Filter = {
@@ -17,14 +21,6 @@ type Filter = {
   endDate?: string;   // DD/MM/YYYY
 };
 
-
-
-import {
-  trades,
-  type Trade,
-  type InsertTrade,
-  type UpdateTrade,
-} from "@shared/schema";
 
 const url =
   process.env.NETLIFY_DATABASE_URL_UNPOOLED ??
@@ -56,7 +52,6 @@ export class PgStorage {
   /**
    * Ambil trades berdasarkan filter: instrument, session, status, dan rentang tanggal
    */
-  /**
   async getTradesByFilter(filter: Filter): Promise<Trade[]> {
     console.log("[getTradesByFilter] filter:", filter);
     let q = db.select().from(trades);
@@ -71,9 +66,9 @@ export class PgStorage {
       q = q.where(eq(trades.status, filter.status));
     }
 
-    const parseDMY = (d: string) => {
-      const [day, month, year] = d.split('/');
-      return dayjs(`${year}-${month}-${day}`, 'YYYY-MM-DD').toDate();
+    const parseDMY = (d: string): Date => {
+      const [day, month, year] = d.split("/").map(Number);
+      return new Date(year, month - 1, day);
     };
 
     if (filter.startDate) {
@@ -88,7 +83,8 @@ export class PgStorage {
     if (filter.endDate) {
       const parsed = parseDMY(filter.endDate);
       if (!isNaN(parsed.getTime())) {
-        const endOfDay = dayjs(parsed).endOf('day').toDate();
+        const endOfDay = new Date(parsed);
+        endOfDay.setHours(23, 59, 59, 999);
         q = q.where(lte(trades.entryDate, endOfDay));
       } else {
         console.warn("Invalid endDate:", filter.endDate);
@@ -99,7 +95,7 @@ export class PgStorage {
     const rows = await q.all();
     console.log("[getTradesByFilter] count:", rows.length);
     return rows;
-  }**/
+  }
 
   async getTradesByFilterOld(filter: {
     instrument?: string;
@@ -127,7 +123,7 @@ export class PgStorage {
     return q.orderBy(trades.entryDate, "desc").all();
   }
 
-  async getTradesByFilter(filter: {
+  async getTradesByFilterOld2(filter: {
     instrument?: string;
     session?: string;
     status?: string;
