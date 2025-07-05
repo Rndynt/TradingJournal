@@ -33,7 +33,7 @@ export class PgStorage {
     return db.select().from(trades).orderBy(trades.entryDate, "desc").all();
   }
 
-  async getTradesByFilter(filter: {
+  async getTradesByFilterOld(filter: {
     instrument?: string;
     session?: string;
     status?: string;
@@ -58,6 +58,61 @@ export class PgStorage {
     }
     return q.orderBy(trades.entryDate, "desc").all();
   }
+
+  async getTradesByFilter(filter: {
+    instrument?: string;
+    session?: string;
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<Trade[]> {
+    // 1. Log filter yang diterima
+    console.log("[getTradesByFilter] filter:", filter);
+
+    // 2. Siapkan query builder
+    let q = db.select().from(trades);
+
+    if (filter.instrument && filter.instrument !== "all") {
+      q = q.where(trades.instrument.eq(filter.instrument));
+    }
+    if (filter.session && filter.session !== "all") {
+      q = q.where(trades.session.eq(filter.session));
+    }
+    if (filter.status && filter.status !== "all") {
+      q = q.where(trades.status.eq(filter.status));
+    }
+
+    if (filter.startDate) {
+      const d = new Date(filter.startDate);
+      if (!isNaN(d.getTime())) {
+        q = q.where(trades.entryDate.gte(d));
+      } else {
+        console.warn(`[getTradesByFilter] invalid startDate: ${filter.startDate}`);
+      }
+    }
+
+    if (filter.endDate) {
+      const d = new Date(filter.endDate);
+      if (!isNaN(d.getTime())) {
+        q = q.where(trades.entryDate.lte(d));
+      } else {
+        console.warn(`[getTradesByFilter] invalid endDate: ${filter.endDate}`);
+      }
+    }
+
+    // 3. Log SQL yang akan dieksekusi
+    const { sql, params } = q.toSQL();
+    console.log("[getTradesByFilter] SQL:", sql);
+    console.log("[getTradesByFilter] params:", params);
+
+    // 4. Eksekusi dan log hasilnya
+    const rows = await q.all();
+    console.log(`[getTradesByFilter] returned ${rows.length} rows`);
+    rows.forEach((r, i) => console.log(`  [row ${i}]`, r));
+
+    return rows;
+  }
+
 
   async createTrade(data: InsertTrade): Promise<Trade> {
     // tanpa .all(), .run(), atau .execute()
