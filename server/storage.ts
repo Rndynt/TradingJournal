@@ -9,7 +9,17 @@ import {
   type UpdateTrade,
 } from "@shared/schema";
 
-const sql = neon(process.env.DATABASE_URL!);
+const url =
+  process.env.NETLIFY_DATABASE_URL_UNPOOLED ??
+  process.env.NETLIFY_DATABASE_URL ??
+  process.env.DATABASE_URL;
+
+if (!url) {
+  throw new Error(
+    "Env var `NETLIFY_DATABASE_URL_UNPOOLED`, `NETLIFY_DATABASE_URL` atau `DATABASE_URL` harus diset"
+  );
+}
+const sql = neon(url);
 const db = drizzle({ client: sql });
 
 export class PgStorage {
