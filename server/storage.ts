@@ -331,7 +331,7 @@ export class PgStorage {
     const [updated] = await db
       .update(trades)
       .set(updateData)
-      .where(trades.id.eq(id))
+      .where(eq(trades.id, id))
       .returning();
     return updated;
   }
