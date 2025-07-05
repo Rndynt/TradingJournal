@@ -21,6 +21,17 @@ type Filter = {
   endDate?: string;   // DD/MM/YYYY
 };
 
+type UpdateTrade = {
+  exitPrice?: number;
+  exitReason?: string;
+  status?: string;
+  exitDate?: Date;
+  notes?: string;
+  pnl?: number;
+  pnlPercentage?: number;
+  entryDate?: Date;
+};
+
 type Trade = SchemaTrade;
 
 const url =
@@ -324,7 +335,7 @@ export class PgStorage {
     return inserted;
   }
 
-  async updateTrade(
+  async updateTradeOld(
     id: number,
     updateData: UpdateTrade
   ): Promise<Trade | undefined> {
@@ -333,6 +344,50 @@ export class PgStorage {
       .set(updateData)
       .where(eq(trades.id, id))
       .returning();
+    return updated;
+  }
+
+  function sanitizeTradeData(data: Record<string, any>): Partial<UpdateTrade> {
+  const sanitized = Object.fromEntries(
+    Object.entries(data).map(([key, val]) => {
+      // Kosong / string null / undefined dianggap tidak diisi
+      if (val === "" || val === "null" || val === "undefined") {
+        return [key, undefined];
+      }
+
+      // Konversi angka
+      if (["exitPrice", "pnl", "pnlPercentage"].includes(key)) {
+        const parsed = parseFloat(val);
+        return [key, isNaN(parsed) ? undefined : parsed];
+      }
+
+      // Konversi tanggal
+      if (["exitDate", "entryDate"].includes(key)) {
+        const parsed = new Date(val);
+        return [key, isNaN(parsed.getTime()) ? undefined : parsed];
+      }
+
+      // Biarkan string apa adanya
+      return [key, val];
+    })
+  ) as Partial<UpdateTrade>;
+
+  // Tambahkan entryDate jika tidak ada (untuk insert atau logikamu)
+  return {
+    ...sanitized,
+    entryDate: sanitized.entryDate ?? new Date(),
+  };
+}
+  
+  async updateTrade(id: number, data: Record<string, any>): Promise<Trade | undefined> {
+    const payload = sanitizeTradeData(data);
+  
+    const [updated] = await db
+      .update(trades)
+      .set(payload)
+      .where(eq(trades.id, id))
+      .returning();
+  
     return updated;
   }
 
