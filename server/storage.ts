@@ -53,36 +53,30 @@ export class PgStorage {
   /**
    * Ambil trades berdasarkan filter: instrument, session, status, dan rentang tanggal
    */
-
   async getTradesByFilter(filter: Filter): Promise<Trade[]> {
   console.log("[getTradesByFilter] filter:", filter);
   let q = db.select().from(trades);
   const conds = [];
 
-  // Filter text (skip 'all')
+  // Skip 'all'
   if (filter.instrument && filter.instrument.toLowerCase() !== "all") {
     conds.push(eq(trades.instrument, filter.instrument));
   }
-
   if (filter.session && filter.session.toLowerCase() !== "all") {
     conds.push(eq(trades.session, filter.session));
   }
-
   if (filter.status && filter.status.toLowerCase() !== "all") {
     conds.push(eq(trades.status, filter.status));
   }
 
-  // Parse string 'DD/MM/YYYY' → Date
-  const parseDMY = (str: string): Date | null => {
-    const [day, month, year] = str.split("/");
-    if (!day || !month || !year) return null;
-    const parsed = new Date(`${year}-${month}-${day}T00:00:00Z`);
-    return isNaN(parsed.getTime()) ? null : parsed;
+  // Helper: Parse YYYY-MM-DD (from UI)
+  const parseISO = (str: string): Date | null => {
+    const date = new Date(`${str}T00:00:00Z`);
+    return isNaN(date.getTime()) ? null : date;
   };
 
-  // Filter startDate (>=)
   if (filter.startDate) {
-    const date = parseDMY(filter.startDate);
+    const date = parseISO(filter.startDate);
     if (date) {
       console.info("[getTradesByFilter] startDate >=", date.toISOString());
       conds.push(gte(trades.entryDate, date));
@@ -91,9 +85,8 @@ export class PgStorage {
     }
   }
 
-  // Filter endDate (<= 23:59:59.999)
   if (filter.endDate) {
-    const date = parseDMY(filter.endDate);
+    const date = parseISO(filter.endDate);
     if (date) {
       const endOfDay = new Date(date);
       endOfDay.setHours(23, 59, 59, 999);
@@ -104,7 +97,7 @@ export class PgStorage {
     }
   }
 
-  // Apply all conditions (AND)
+  // Gabungkan semua kondisi
   if (conds.length > 0) {
     q = q.where((qb) => conds.reduce((acc, cond) => acc ? acc.and(cond) : cond));
   }
@@ -113,6 +106,8 @@ export class PgStorage {
   console.log("[getTradesByFilter] count:", rows.length);
   return rows;
 }
+
+  
 
 
   async getTradesByFilterOld5(filter: Filter): Promise<Trade[]> {
