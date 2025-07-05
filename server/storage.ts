@@ -337,7 +337,7 @@ export class PgStorage {
   }
 
   async deleteTrade(id: number): Promise<boolean> {
-    const result = await db.delete(trades).where(trades.id.eq(id)));
+    const result = await db.delete(trades).where(trades.id.eq(id));
     return result.rowCount > 0;
   }
 
