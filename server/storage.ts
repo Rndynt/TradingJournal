@@ -103,7 +103,7 @@ export class PgStorage {
     }
 
     console.log('[getTradesByFilter] SQL:', q.toSQL());
-    const rows = await q.all();
+    const rows = await q;
     console.log('[getTradesByFilter] count:', rows.length);
     return rows;
   }
