@@ -100,7 +100,7 @@ export class PgStorage {
     return result.rowCount > 0;
   }
 
-  async getTradeStats(): Promise<{
+  async getTradeStatsOld(): Promise<{
     winRate: number;
     totalPnl: number;
     maxDrawdown: number;
@@ -130,6 +130,58 @@ export class PgStorage {
       totalTrades: all.length,
     };
   }
+
+  async getTradeStats(): Promise<{
+  winRate: number;
+  totalPnl: number;
+  maxDrawdown: number;
+  activeTrades: number;
+  totalTrades: number;
+}> {
+  const all = await this.getAllTrades();
+
+  // 1. Hitung realized & unrealized PnL per trade
+  const pnls = all.map((t) => {
+    if (t.status === "closed" && t.pnl !== null) {
+      return parseFloat(t.pnl);
+    }
+    // open trade: unrealized PnL = currentEquity - startBalance
+    return parseFloat(t.currentEquity) - parseFloat(t.startBalance);
+  });
+
+  // 2. Statistik closed trades untuk winRate
+  const closed = all.filter((t) => t.status === "closed");
+  const wins = closed.filter((t) => parseFloat(t.pnl ?? "0") > 0);
+  const winRate = closed.length
+    ? (wins.length / closed.length) * 100
+    : 0;
+
+  // 3. Total PnL dari semua trade (real + unreal)
+  const totalPnl = pnls.reduce((sum, x) => sum + x, 0);
+
+  // 4. Max drawdown di sepanjang cumulative PnL
+  let peak = 0,
+    current = 0,
+    maxDD = 0;
+  for (const x of pnls) {
+    current += x;
+    peak = Math.max(peak, current);
+    maxDD = Math.max(maxDD, peak - current);
+  }
+  const maxDrawdown = peak > 0 ? (maxDD / peak) * 100 : 0;
+
+  // 5. Active & total trades
+  const activeTrades = all.filter((t) => t.status === "open").length;
+  const totalTrades = all.length;
+
+  return {
+    winRate:      Math.round(winRate      * 100) / 100,
+    totalPnl:     Math.round(totalPnl     * 100) / 100,
+    maxDrawdown:  Math.round(maxDrawdown  * 100) / 100,
+    activeTrades,
+    totalTrades,
+  };
+}
 }
 
 export const storage = new PgStorage();
