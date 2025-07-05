@@ -35,8 +35,11 @@ export class PgStorage {
 
   async getAllTrades(): Promise<Trade[]> {
   console.log("[getAllTrades] fetching all trades from DB");
-  const ss = await db.select().from(trades).orderBy(desc(trades.entryDate));
-  console.log(ss);
+  const query = await db.select().from(trades).prepare();
+const iterator = await query.iterator();
+for await (const row of iterator) {
+  console.log(row);
+}
   //const rows = await ss.all();
   //console.log(`[getAllTrades] returned ${rows.length} rows`);
   
