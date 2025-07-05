@@ -75,24 +75,29 @@ export class PgStorage {
     console.log("[getTradesByFilter] filter:", filter);
 
     // 2. Siapkan query builder
-    let q = db.select().from(trades);
+    let q = await db.select().from(trades);
+    await db.select().from(users).where(eq(users.id, 42));
 
     if (filter.instrument && filter.instrument !== "all") {
-      q = q.where(trades.instrument.eq(filter.instrument));
+      //q = q.where(trades.instrument.eq(filter.instrument));
+      q = q.where(eq(trades.instrument, filter.instrument);
     }
     if (filter.session && filter.session !== "all") {
-      q = q.where(trades.session.eq(filter.session));
+     // q = q.where(trades.session.eq(filter.session));
+      q = q.where(eq(trades.session, filter.session);
     }
     if (filter.status && filter.status !== "all") {
-      q = q.where(trades.status.eq(filter.status));
+      //q = q.where(trades.status.eq(filter.status));
+      q = q.where(eq(trades.status, filter.status);
     }
 
-    console.log(q.all());
+    console.log(q);
 
     if (filter.startDate) {
       const d = new Date(filter.startDate);
       if (!isNaN(d.getTime())) {
-        q = q.where(trades.entryDate.gte(d));
+        //q = q.where(trades.entryDate.gte(d));
+        q = q.where(gte(trades.entryDate, d);
       } else {
         console.warn(`[getTradesByFilter] invalid startDate: ${filter.startDate}`);
       }
@@ -101,7 +106,8 @@ export class PgStorage {
     if (filter.endDate) {
       const d = new Date(filter.endDate);
       if (!isNaN(d.getTime())) {
-        q = q.where(trades.entryDate.lte(d));
+       // q = q.where(trades.entryDate.lte(d));
+        q = q.where(lte(trades.entryDate, d);
       } else {
         console.warn(`[getTradesByFilter] invalid endDate: ${filter.endDate}`);
       }
@@ -113,7 +119,7 @@ export class PgStorage {
     console.log("[getTradesByFilter] params:", params);
 
     // 4. Eksekusi dan log hasilnya
-    const rows = await q.all();
+    const rows = await q;
     console.log(`[getTradesByFilter] returned ${rows.length} rows`);
     rows.forEach((r, i) => console.log(`  [row ${i}]`, r));
 
