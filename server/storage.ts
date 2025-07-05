@@ -90,7 +90,7 @@ export class PgStorage {
       q = q.where(eq(trades.status, filter.status));
     }
 
-    console.log(q);
+    console.log("--------------filter startdate---------------");
 
     if (filter.startDate) {
       const d = new Date(filter.startDate);
@@ -98,9 +98,11 @@ export class PgStorage {
         //q = q.where(trades.entryDate.gte(d));
         q = q.where(gte(trades.entryDate, d));
       } else {
-        console.warn(`[getTradesByFilter] invalid startDate: ${filter.startDate}`);
+        console.log(`[getTradesByFilter] invalid startDate: ${filter.startDate}`);
       }
     }
+
+    console.log("-------------filter enddate----------------");
 
     if (filter.endDate) {
       const d = new Date(filter.endDate);
@@ -108,10 +110,12 @@ export class PgStorage {
        // q = q.where(trades.entryDate.lte(d));
         q = q.where(lte(trades.entryDate, d));
       } else {
-        console.warn(`[getTradesByFilter] invalid endDate: ${filter.endDate}`);
+        console.log(`[getTradesByFilter] invalid endDate: ${filter.endDate}`);
       }
     }
 
+    console.log("--------------return data---------------");
+    console.log(q.orderBy(desc(trades.entryDate)));
     return q.orderBy(desc(trades.entryDate));
   }
 
