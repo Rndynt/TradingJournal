@@ -35,8 +35,74 @@ export class PgStorage {
   }
 
   async getAllTrades(): Promise<Trade[]> {
-    const data = await db.select().from(trades);
-    return data;
+      const data = await db.select().from(trades);
+      return data;
+  }
+
+  interface Filter {
+    instrument?: string;
+    session?: string;
+    status?: string;
+    startDate?: string; // expected in DD/MM/YYYY
+    endDate?: string;   // expected in DD/MM/YYYY
+  }
+
+  type Trade = Awaited<ReturnType<typeof getTradesByFilter>>[number];
+
+export async function getTradesByFilter(filter: Filter): Promise<Trade[]> {
+  console.log("[getTradesByFilter] filter:", filter);
+
+  // 1. Build base query (do not await here)
+  let q = db.select().from(trades);
+
+  // 2. Apply instrument filter
+  if (filter.instrument && filter.instrument.toLowerCase() !== "all") {
+    q = q.where(eq(trades.instrument, filter.instrument));
+  }
+
+  // 3. Apply session filter
+  if (filter.session && filter.session.toLowerCase() !== "all") {
+    q = q.where(eq(trades.session, filter.session));
+  }
+
+  // 4. Apply status filter
+  if (filter.status && filter.status.toLowerCase() !== "all") {
+    q = q.where(eq(trades.status, filter.status));
+  }
+
+  // 5. Date parsing helper
+  const parseDMY = (d: string) => {
+    const [day, month, year] = d.split("/");
+    return dayjs(`${year}-${month}-${day}`, "YYYY-MM-DD").toDate();
+  };
+
+  // 6. Apply startDate (>= entryDate)
+  if (filter.startDate) {
+    const parsed = parseDMY(filter.startDate);
+    if (!isNaN(parsed.getTime())) {
+      q = q.where(gte(trades.entryDate, parsed));
+    } else {
+      console.warn("Invalid startDate:", filter.startDate);
+    }
+  }
+
+  // 7. Apply endDate (<= end of entryDate)
+  if (filter.endDate) {
+    const parsed = parseDMY(filter.endDate);
+    if (!isNaN(parsed.getTime())) {
+      const endOfDay = dayjs(parsed).endOf("day").toDate();
+      q = q.where(lte(trades.entryDate, endOfDay));
+    } else {
+      console.warn("Invalid endDate:", filter.endDate);
+    }
+  }
+
+  // 8. Execute query
+  console.log("[getTradesByFilter] executing query...");
+  const rows = await q;
+  console.log("[getTradesByFilter] result count:", rows.length);
+
+  return rows;
 }
 
   async getTradesByFilterOld(filter: {
@@ -65,7 +131,7 @@ export class PgStorage {
     return q.orderBy(trades.entryDate, "desc").all();
   }
 
-  async getTradesByFilter(filter: {
+  async getTradesByFilterOld2(filter: {
     instrument?: string;
     session?: string;
     status?: string;
