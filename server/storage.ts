@@ -7,7 +7,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import { eq, gte, lte } from "drizzle-orm";
 import {
   trades,
-  type Trade,
+  type Trade as SchemaTrade,
   type InsertTrade,
   type UpdateTrade,
 } from "@shared/schema";
@@ -21,6 +21,7 @@ type Filter = {
   endDate?: string;   // DD/MM/YYYY
 };
 
+type Trade = SchemaTrade;
 
 const url =
   process.env.NETLIFY_DATABASE_URL_UNPOOLED ??
@@ -53,49 +54,45 @@ export class PgStorage {
    * Ambil trades berdasarkan filter: instrument, session, status, dan rentang tanggal
    */
   async getTradesByFilter(filter: Filter): Promise<Trade[]> {
-    console.log("[getTradesByFilter] filter:", filter);
     let q = db.select().from(trades);
 
-    if (filter.instrument && filter.instrument.toLowerCase() !== 'all') {
+    // instrument, session, status filters
+    if (filter.instrument?.toLowerCase() !== 'all' && filter.instrument) {
       q = q.where(eq(trades.instrument, filter.instrument));
     }
-    if (filter.session && filter.session.toLowerCase() !== 'all') {
+    if (filter.session?.toLowerCase() !== 'all' && filter.session) {
       q = q.where(eq(trades.session, filter.session));
     }
-    if (filter.status && filter.status.toLowerCase() !== 'all') {
+    if (filter.status?.toLowerCase() !== 'all' && filter.status) {
       q = q.where(eq(trades.status, filter.status));
     }
 
-    const parseDMY = (d: string): Date => {
-      const [day, month, year] = d.split("/").map(Number);
-      return new Date(year, month - 1, day);
+    // Parse date string, return Date or null
+    const parseDate = (d: string): Date | null => {
+      const dt = Date.parse(d.includes('/') ? d.split('/').reverse().join('-') : d);
+      return isNaN(dt) ? null : new Date(dt);
     };
 
+    // startDate filter
     if (filter.startDate) {
-      const parsed = parseDMY(filter.startDate);
-      if (!isNaN(parsed.getTime())) {
-        q = q.where(gte(trades.entryDate, parsed));
-      } else {
-        console.warn("Invalid startDate:", filter.startDate);
+      const start = parseDate(filter.startDate);
+      if (start) {
+        q = q.where(gte(trades.entryDate, start));
       }
     }
 
+    // endDate filter
     if (filter.endDate) {
-      const parsed = parseDMY(filter.endDate);
-      if (!isNaN(parsed.getTime())) {
-        const endOfDay = new Date(parsed);
-        endOfDay.setHours(23, 59, 59, 999);
-        q = q.where(lte(trades.entryDate, endOfDay));
-      } else {
-        console.warn("Invalid endDate:", filter.endDate);
+      const end = parseDate(filter.endDate);
+      if (end) {
+        end.setHours(23, 59, 59, 999);
+        q = q.where(lte(trades.entryDate, end));
       }
     }
 
-    console.log("[getTradesByFilter] executing...");
-    const rows = await q.all();
-    console.log("[getTradesByFilter] count:", rows.length);
-    return rows;
+    return await q.all();
   }
+
 
   async getTradesByFilterOld(filter: {
     instrument?: string;
