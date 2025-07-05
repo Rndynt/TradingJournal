@@ -35,6 +35,10 @@ export class PgStorage {
 
   async getAllTrades(): Promise<Trade[]> {
   console.log("[getAllTrades] fetching all trades from DB");
+  const ss = await db.select().from(users).orderBy(desc(users.name));
+  console.log(ss);
+  //const rows = await ss.all();
+  //console.log(`[getAllTrades] returned ${rows.length} rows`);
   
   // Bangun query
   const q = db.select().from(trades).orderBy(trades.entryDate, "desc");
