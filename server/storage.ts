@@ -3,7 +3,7 @@
 import { neon } from "@neondatabase/serverless";
 //import { drizzle } from "drizzle-orm/neon-serverless";
 import { drizzle } from 'drizzle-orm/neon-http';
-import { asc, desc } from 'drizzle-orm';
+//import { asc, desc } from 'drizzle-orm';
 
 import {
   trades,
@@ -116,8 +116,10 @@ export class PgStorage {
     }
 
     console.log("--------------return data---------------");
-    console.log(q.orderBy(desc(trades.entryDate)));
-    return q.orderBy(desc(trades.entryDate));
+    //console.log(q.orderBy(desc(trades.entryDate)));
+    //return q.orderBy(desc(trades.entryDate));
+    console.log(q.orderBy(trades.entryDate));
+    return q;
   }
 
 
