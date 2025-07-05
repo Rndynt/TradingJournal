@@ -43,28 +43,12 @@ export class PgStorage {
     const data = await db.select().from(trades);
   console.log(data);
 
-    const iterator = await db.select().from(users).iterator();
-for await (const row of iterator) {
-  console.log(row);
-}
     
-    
-  
-  //const rows = await ss.all();
-  //console.log(`[getAllTrades] returned ${rows.length} rows`);
-  
-  // Bangun query
-  const q = db.select().from(trades).orderBy(trades.entryDate, "desc");
-  const { sql, params } = q.toSQL();
-  console.log("[getAllTrades2] SQL:", sql);
-  console.log("[getAllTrades3] params:", params);
-
-  // Eksekusi dan log hasilnya
-  const rows = await q.all();
-  console.log(`[getAllTrades] returned ${rows.length} rows`);
-  rows.forEach((r, i) => console.log(`  [trade ${i}]`, r));
-
-  return rows;
+   return await db
+      .select()
+      .from(trades)
+      .orderBy(trades.entryDate, "desc")
+      .all();
 }
 
   async getTradesByFilterOld(filter: {
