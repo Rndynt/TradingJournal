@@ -58,6 +58,61 @@ export class PgStorage {
     console.log("[getTradesByFilter] filter:", filter);
     let q = db.select().from(trades);
 
+    // kumpulkan semua kondisi
+    const conds: any[] = [];
+    if (filter.instrument && filter.instrument.toLowerCase() !== 'all') {
+      conds.push(eq(trades.instrument, filter.instrument));
+    }
+    if (filter.session && filter.session.toLowerCase() !== 'all') {
+      conds.push(eq(trades.session, filter.session));
+    }
+    if (filter.status && filter.status.toLowerCase() !== 'all') {
+      conds.push(eq(trades.status, filter.status));
+    }
+
+    const parseDate = (d: string): Date | null => {
+      let utcMs: number;
+      if (d.includes('/')) {
+        const [day, month, year] = d.split('/').map(Number);
+        utcMs = Date.UTC(year, month - 1, day);
+      } else {
+        utcMs = Date.parse(d);
+      }
+      return isNaN(utcMs) ? null : new Date(utcMs);
+    };
+
+    if (filter.startDate) {
+      const start = parseDate(filter.startDate);
+      if (start) {
+        start.setHours(0, 0, 0, 0);
+        conds.push(gte(trades.entryDate, start));
+      }
+    }
+    if (filter.endDate) {
+      const end = parseDate(filter.endDate);
+      if (end) {
+        end.setHours(23, 59, 59, 999);
+        conds.push(lte(trades.entryDate, end));
+      }
+    }
+
+    // jika ada kondisi, gabungkan dengan AND
+    if (conds.length) {
+      // gunakan and() untuk menggabungkan
+      q = q.where(and(...conds));
+    }
+
+    console.log('[getTradesByFilter] SQL:', q.toSQL());
+    const rows = await q.all();
+    console.log('[getTradesByFilter] count:', rows.length);
+    return rows;
+  }
+
+
+  async getTradesByFilterOld5(filter: Filter): Promise<Trade[]> {
+    console.log("[getTradesByFilter] filter:", filter);
+    let q = db.select().from(trades);
+
     // instrument, session, status filters
     if (filter.instrument && filter.instrument.toLowerCase() !== 'all') {
       q = q.where(eq(trades.instrument, filter.instrument));
