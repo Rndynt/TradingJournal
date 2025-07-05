@@ -79,15 +79,15 @@ export class PgStorage {
 
     if (filter.instrument && filter.instrument !== "all") {
       //q = q.where(trades.instrument.eq(filter.instrument));
-      q = q.where(eq(trades.instrument, filter.instrument);
+      q = q.where(eq(trades.instrument, filter.instrument));
     }
     if (filter.session && filter.session !== "all") {
      // q = q.where(trades.session.eq(filter.session));
-      q = q.where(eq(trades.session, filter.session);
+      q = q.where(eq(trades.session, filter.session));
     }
     if (filter.status && filter.status !== "all") {
       //q = q.where(trades.status.eq(filter.status));
-      q = q.where(eq(trades.status, filter.status);
+      q = q.where(eq(trades.status, filter.status));
     }
 
     console.log(q);
@@ -96,7 +96,7 @@ export class PgStorage {
       const d = new Date(filter.startDate);
       if (!isNaN(d.getTime())) {
         //q = q.where(trades.entryDate.gte(d));
-        q = q.where(gte(trades.entryDate, d);
+        q = q.where(gte(trades.entryDate, d));
       } else {
         console.warn(`[getTradesByFilter] invalid startDate: ${filter.startDate}`);
       }
@@ -106,7 +106,7 @@ export class PgStorage {
       const d = new Date(filter.endDate);
       if (!isNaN(d.getTime())) {
        // q = q.where(trades.entryDate.lte(d));
-        q = q.where(lte(trades.entryDate, d);
+        q = q.where(lte(trades.entryDate, d));
       } else {
         console.warn(`[getTradesByFilter] invalid endDate: ${filter.endDate}`);
       }
