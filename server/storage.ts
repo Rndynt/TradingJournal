@@ -67,6 +67,9 @@ export class PgStorage {
       q = q.where(eq(trades.status, filter.status));
     }
 
+    const sql = q.toSQL();
+    console.log("[getAllTradesSQL] SQL:", sql);
+
     // Parse date string, return Date or null
     const parseDate = (d: string): Date | null => {
       const dt = Date.parse(d.includes('/') ? d.split('/').reverse().join('-') : d);
@@ -90,7 +93,10 @@ export class PgStorage {
       }
     }
 
-    return await q.all();
+    const sql1 = q.toSQL();
+    console.log("[getAllTradesSQL2] SQL:", sql1);
+
+    return await q;
   }
 
 
