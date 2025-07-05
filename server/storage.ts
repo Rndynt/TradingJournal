@@ -34,22 +34,8 @@ export class PgStorage {
   }
 
   async getAllTrades(): Promise<Trade[]> {
-    //console.log("[getAllTrades1] fetching all trades from DB");
-    //const result = await db.execute('select * from trades');
-
-    //console.log(result);
-    //console.log("----------");
-
     const data = await db.select().from(trades);
-    //console.log(data);
-
     return data;
-    
-   /**return await db
-      .select()
-      .from(trades)
-      .orderBy(trades.entryDate, "desc")
-      .all();**/
 }
 
   async getTradesByFilterOld(filter: {
@@ -100,6 +86,8 @@ export class PgStorage {
     if (filter.status && filter.status !== "all") {
       q = q.where(trades.status.eq(filter.status));
     }
+
+    console.log(q.all());
 
     if (filter.startDate) {
       const d = new Date(filter.startDate);
