@@ -4,7 +4,7 @@ import { neon } from "@neondatabase/serverless";
 //import { drizzle } from "drizzle-orm/neon-serverless";
 import { drizzle } from 'drizzle-orm/neon-http';
 //import { asc, desc } from 'drizzle-orm';
-import { eq, gte, lte } from "drizzle-orm";
+import { and, eq, gte, lte } from "drizzle-orm";
 import {
   trades,
   type Trade as SchemaTrade,
@@ -99,7 +99,7 @@ export class PgStorage {
 
   // Gabungkan semua kondisi
   if (conds.length > 0) {
-    q = q.where((qb) => conds.reduce((acc, cond) => acc ? acc.and(cond) : cond));
+    q = q.where(and(...conds));
   }
 
   const rows = await q;
