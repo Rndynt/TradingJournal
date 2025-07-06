@@ -61,9 +61,12 @@ class PriceService {
   }
   
   private startBinanceWebSocket(symbol: string) {
-    const binanceSymbol = symbol.toLowerCase(); // eg. btcusd → btcusdt
-    const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSymbol}t@trade`);
+
+    const binanceSymbol = symbol.replace('USD','').toLowerCase() + 'usdt';  
     
+    // 'BTCUSD' -> 'BTC' -> 'btc' + 'usdt' = 'btcusdt'
+    const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSymbol}@trade`);
+
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       const currentPrice = parseFloat(data.p);
