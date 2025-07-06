@@ -43,10 +43,31 @@ export const insertTradeSchema = createInsertSchema(trades).omit({
   rrRatio: z.string().optional(),
 });
 
+/**
 export const updateTradeSchema = createInsertSchema(trades).omit({
   id: true,
   entryDate: true,
 }).partial();
+**/
+
+export const updateTradeSchema = createInsertSchema(trades)
+  .omit({
+    id: true,
+    entryDate: true,
+  })
+  .partial()
+  .extend({
+    exitDate: z.coerce.date().optional(),
+    pnl: z.coerce.number().optional(),
+    pnlPercentage: z.coerce.number().optional(),
+    rrRatio: z.coerce.number().optional(),
+    riskPercentage: z.coerce.number().optional(),
+    stopLoss: z.coerce.number().optional(),
+    takeProfit: z.coerce.number().optional(),
+    exitPrice: z.coerce.number().optional(),
+    partialTpPrice: z.coerce.number().optional(),
+    partialTpPercentage: z.coerce.number().optional(),
+  });
 
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
 export type UpdateTrade = z.infer<typeof updateTradeSchema>;
