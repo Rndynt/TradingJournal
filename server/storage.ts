@@ -376,9 +376,11 @@ export class PgStorage {
   }
   
   async updateTrade(id: number, data: Record<string, any>): Promise<Trade | undefined> {
+    
+    console.log("updateTrade Running....");
     const payload = sanitizeTradeData(data);
     
-    console.log(payload);
+    
   
     const [updated] = await db
       .update(trades)
