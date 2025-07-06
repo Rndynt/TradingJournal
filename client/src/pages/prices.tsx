@@ -1,14 +1,27 @@
+// client/src/pages/price.tsx
 
+import { useEffect } from "react";
 import PriceTicker from "@/components/charts/price-ticker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, DollarSign, Clock } from "lucide-react";
+import { priceService } from "@/lib/utils/price-service";
 
 export default function Prices() {
   const majorPairs = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
   const commodities = ['XAUUSD', 'XAGUSD'];
   const crypto = ['BTCUSD', 'ETHUSD'];
-
+  
+  // Start updates sekali saat halaman dimount
+  useEffect(() => {
+    const allSymbols = [...majorPairs, ...commodities, ...crypto];
+    priceService.startUpdates(allSymbols);
+    
+    return () => {
+      priceService.stopUpdates();
+    };
+  }, []);
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

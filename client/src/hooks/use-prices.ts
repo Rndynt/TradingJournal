@@ -1,40 +1,32 @@
 
+// client/src/hooks/use-price.tsx
+
 import { useState, useEffect } from 'react';
 import { priceService, type PriceData } from '@/lib/utils/price-service';
 
-const DEFAULT_SYMBOLS = ['XAUUSD', 'BTCUSD', 'ETHUSD'];
-
-export function usePrices(symbols: string[] = DEFAULT_SYMBOLS) {
-  const [prices, setPrices] = useState<Map<string, PriceData>>(new Map());
-  const [isLoading, setIsLoading] = useState(true);
-
+export function usePrices(symbols: string[] = []) {
+  const [prices, setPrices] = useState < Map < string, PriceData >> (new Map());
+  
   useEffect(() => {
-    setIsLoading(true);
-    
-    const unsubscribe = priceService.subscribe((updatedPrices) => {
-      setPrices(updatedPrices);
-      setIsLoading(false);
-    });
-
-    priceService.startUpdates(symbols);
-
-    return () => {
-      unsubscribe();
-      priceService.stopUpdates();
-    };
-  }, [symbols.join(',')]);
-
+    const unsubscribe = priceService.subscribe(setPrices);
+    return () => unsubscribe();
+  }, []);
+  
+  const filteredPrices = new Map(
+    Array.from(prices.entries()).filter(([symbol]) =>
+      symbols.length === 0 || symbols.includes(symbol)
+    )
+  );
+  
   return {
-    prices,
-    isLoading,
-    getPrice: (symbol: string) => prices.get(symbol),
+    prices: filteredPrices,
+    getPrice: (symbol: string) => filteredPrices.get(symbol),
   };
 }
 
 export function usePrice(symbol: string) {
-  const { prices, isLoading } = usePrices([symbol]);
+  const { prices } = usePrices([symbol]);
   return {
     price: prices.get(symbol),
-    isLoading,
   };
 }
