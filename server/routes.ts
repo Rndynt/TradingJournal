@@ -100,21 +100,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Update trade
   app.put("/api/trades/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const updateData = updateTradeSchema.parse(req.body);
-      const trade = await storage.updateTrade(id, updateData);
-      if (!trade) {
-        return res.status(404).json({ message: "Trade not found" });
-      }
-      res.json(trade);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid update data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to update trade" });
+  try {
+    console.log("🚀 PUT /api/trades/:id called");
+
+    const id = parseInt(req.params.id);
+    console.log("📌 Trade ID:", id);
+
+    console.log("📦 Raw Body:", req.body);
+    const updateData = updateTradeSchema.parse(req.body);
+    console.log("✅ Parsed updateData:", updateData);
+
+    const trade = await storage.updateTrade(id, updateData);
+    console.log("✅ Trade updated successfully");
+
+    if (!trade) {
+      return res.status(404).json({ message: "Trade not found" });
     }
-  });
+
+    return res.json(trade);
+  } catch (error) {
+    console.error("❌ Error caught in PUT /api/trades/:id", error);
+
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: "Invalid update data", errors: error.errors });
+    }
+
+    return res.status(500).json({ message: "Failed to update trade" });
+  }
+});
 
   // Delete trade
   app.delete("/api/trades/:id", async (req, res) => {
