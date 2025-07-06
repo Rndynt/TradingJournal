@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { priceService, type PriceData } from '@/lib/utils/price-service';
 
-const DEFAULT_SYMBOLS = ['XAUUSD', 'BTCUSD', 'ETHUSD', 'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
+const DEFAULT_SYMBOLS = ['XAUUSD', 'BTCUSD', 'ETHUSD', 'EURUSD', 'GBPUSD', 'USDJPY'];
 
 export function usePrices(symbols: string[] = DEFAULT_SYMBOLS) {
   const [prices, setPrices] = useState<Map<string, PriceData>>(new Map());

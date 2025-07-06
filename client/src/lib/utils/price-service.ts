@@ -14,32 +14,60 @@ class PriceService {
 
   // Mock price data for demonstration - replace with real API calls
   private async fetchPrice(symbol: string): Promise<PriceData> {
-    // Simulate price fetching with realistic price movements
-    const basePrices: Record<string, number> = {
-      'XAUUSD': 2050.00,
-      'BTCUSD': 43000.00,
-      'ETHUSD': 2600.00,
-      'EURUSD': 1.0850,
-      'GBPUSD': 1.2650,
-      'USDJPY': 148.50,
-      'AUDUSD': 0.6720,
-      'USDCAD': 1.3450,
-    };
-
-    const basePrice = basePrices[symbol] || 1.0000;
-    const randomChange = (Math.random() - 0.5) * 0.02; // ±1% random movement
-    const currentPrice = basePrice * (1 + randomChange);
-    const change = currentPrice - basePrice;
-    const changePercent = (change / basePrice) * 100;
+  if (symbol === 'XAUUSD') {
+    // Fetch from Gold-API.com
+    const res = await fetch('https://api.gold-api.com/price/XAU');
+    const data = await res.json();
+    const price = data.XAU;
 
     return {
       symbol,
-      price: currentPrice,
-      change,
-      changePercent,
+      price,
+      change: 0,
+      changePercent: 0,
       lastUpdate: new Date(),
     };
   }
+
+  if (symbol === 'BTCUSD') {
+    // Fetch from CoinGecko
+    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+    const data = await res.json();
+    const price = data.bitcoin.usd;
+
+    return {
+      symbol,
+      price,
+      change: 0,
+      changePercent: 0,
+      lastUpdate: new Date(),
+    };
+  }
+
+  // Untuk simbol lain, pakai mock
+  const basePrices: Record<string, number> = {
+    'ETHUSD': 2600.00,
+    'EURUSD': 1.0850,
+    'GBPUSD': 1.2650,
+    'USDJPY': 148.50,
+    'AUDUSD': 0.6720,
+    'USDCAD': 1.3450,
+  };
+
+  const basePrice = basePrices[symbol] || 1.0;
+  const randomChange = (Math.random() - 0.5) * 0.02;
+  const currentPrice = basePrice * (1 + randomChange);
+  const change = currentPrice - basePrice;
+  const changePercent = (change / basePrice) * 100;
+
+  return {
+    symbol,
+    price: currentPrice,
+    change,
+    changePercent,
+    lastUpdate: new Date(),
+  };
+}
 
   async updatePrices(symbols: string[]) {
     const updates = await Promise.all(symbols.map(symbol => this.fetchPrice(symbol)));
