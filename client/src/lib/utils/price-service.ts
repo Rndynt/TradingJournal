@@ -15,6 +15,8 @@ class PriceService {
   private binanceSockets: Map < string, WebSocket > = new Map();
   
   async fetchPrice(symbol: string): Promise < PriceData > {
+    console.log("------------");
+    console.log(symbol);
     if (symbol === 'XAUUSD') {
       const res = await fetch('https://api.gold-api.com/price/XAU');
       const data = await res.json();
