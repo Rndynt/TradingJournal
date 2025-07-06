@@ -378,18 +378,21 @@ export class PgStorage {
   async updateTrade(id: number, data: Record<string, any>): Promise<Trade | undefined> {
     
     console.log("updateTrade Running....");
+
     const payload = sanitizeTradeData(data);
-    
-    
-  
-    const [updated] = await db
-      .update(trades)
-      .set(payload)
-      .where(eq(trades.id, id))
-      .returning();
-      
-      console.log('[updateTrade] SQL:', updated.toSQL());
-  
+
+    // 1) Siapkan builder tanpa langsung mengeksekusi
+    const query = db
+    .update(trades)
+    .set(payload)
+    .where(eq(trades.id, id));
+
+    // 2) Log SQL string-nya
+    console.log('[updateTrade] SQL:', query.toSQL());
+
+    // 3) Eksekusi dan ambil row-nya
+    const [updated] = await query.returning();
+
     return updated;
   }
 
