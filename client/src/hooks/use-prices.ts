@@ -7,25 +7,23 @@ export function usePrices(symbols: string[] = []) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log("usePrices symbols:", symbols);
-
-    let isMounted = true;
-
+    setIsLoading(true);
+    
     const unsubscribe = priceService.subscribe((updatedPrices) => {
-      if (!isMounted) return;
-      setPrices(new Map(
+      const filtered = new Map(
         Array.from(updatedPrices.entries()).filter(([symbol]) =>
           symbols.includes(symbol)
         )
-      ));
+      );
+      setPrices(filtered);
       setIsLoading(false);
     });
 
     priceService.startUpdates(symbols);
 
     return () => {
-      isMounted = false;
       unsubscribe();
+      priceService.stopUpdates();
     };
   }, [symbols.join(',')]);
 
