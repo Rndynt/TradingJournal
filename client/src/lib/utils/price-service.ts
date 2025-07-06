@@ -15,17 +15,19 @@ class PriceService {
   // Mock price data for demonstration - replace with real API calls
   private async fetchPrice(symbol: string): Promise<PriceData> {
   if (symbol === 'XAUUSD') {
-    // Fetch from Gold-API.com
     const res = await fetch('https://api.gold-api.com/price/XAU');
-    const data = await res.json();
-    const price = data.XAU;
+    const data: {
+      price: number;
+      updatedAt: string;
+      updatedAtReadable: string;
+    } = await res.json();
 
     return {
       symbol,
-      price,
-      change: 0,
-      changePercent: 0,
-      lastUpdate: new Date(),
+      price: data.price,
+      change: 0,           // (Gold-API belum sediakan change)
+      changePercent: 0,    // (bisa kamu hitung manual jika mau)
+      lastUpdate: new Date(data.updatedAt),
     };
   }
 
