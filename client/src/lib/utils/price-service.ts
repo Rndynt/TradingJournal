@@ -33,6 +33,7 @@ class PriceService {
     }
     
     // Untuk simbol selain XAUUSD, kita handle via WebSocket
+    console.log(symbol);
     return this.prices.get(symbol) ?? {
       symbol,
       price: 0,
