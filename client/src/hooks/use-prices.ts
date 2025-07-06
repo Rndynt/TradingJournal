@@ -2,11 +2,13 @@
 import { useState, useEffect } from 'react';
 import { priceService, type PriceData } from '@/lib/utils/price-service';
 
-export function usePrices(symbols: string[]) {
+export function usePrices(symbols: string[] = []) {
   const [prices, setPrices] = useState<Map<string, PriceData>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log("usePrices symbols:", symbols);
+
     let isMounted = true;
 
     const unsubscribe = priceService.subscribe((updatedPrices) => {
@@ -19,13 +21,11 @@ export function usePrices(symbols: string[]) {
       setIsLoading(false);
     });
 
-    // ❗️Jangan hentikan semua update, cukup tambah simbol baru
     priceService.startUpdates(symbols);
 
     return () => {
       isMounted = false;
       unsubscribe();
-      // ❌ Jangan panggil stopUpdates() di sini!
     };
   }, [symbols.join(',')]);
 
