@@ -151,9 +151,6 @@ export class PgStorage {
   return rows;
 }
 
-  
-
-
   async getTradesByFilterOld5(filter: Filter): Promise<Trade[]> {
     console.log("[getTradesByFilter] filter:", filter);
     let q = db.select().from(trades);
@@ -258,7 +255,6 @@ export class PgStorage {
     return await q;
   }
 
-
   async getTradesByFilterOld(filter: {
     instrument?: string;
     session?: string;
@@ -343,7 +339,6 @@ export class PgStorage {
     return q;
   }
 
-
   async createTrade(data: InsertTrade): Promise<Trade> {
     // tanpa .all(), .run(), atau .execute()
      // const now = new Date();
@@ -388,6 +383,8 @@ export class PgStorage {
       .set(payload)
       .where(eq(trades.id, id))
       .returning();
+      
+      console.log('[updateTrade] SQL:', updated.toSQL());
   
     return updated;
   }
